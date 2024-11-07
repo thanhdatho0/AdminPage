@@ -1,6 +1,7 @@
 import Header from "../../Components/PageHeader/Header.tsx";
 import StatsCardList from "../../Components/StatsCardList/StatsCardList.tsx";
 import TransactionList from "../../Components/TransactionList/TransactionList.tsx";
+import DashboardLineChart from "../../Components/DashboardLineChart/DashboardLineChart.tsx";
 
 
 const DashboardPage = () => {
@@ -9,6 +10,7 @@ const DashboardPage = () => {
             <Header title={"Dashboard"} />
             <StatsCardList/>
             <TransactionList/>
+            <DashboardLineChart/>
         </div>
     );
 };

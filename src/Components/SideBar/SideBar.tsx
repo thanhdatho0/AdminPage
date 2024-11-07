@@ -25,12 +25,12 @@ const SideBar = () => {
                 className="text-white p-2 md:hidden"
                 onClick={toggleSidebar}
             >
-                <AiOutlineMenu size={24} color="rgb(17 24 39)" />
+                <AiOutlineMenu size={24} color="white" />
             </button>
 
             {/* Sidebar */}
             <div
-                className={`fixed top-0 left-0 w-64 h-[100vh] bg-gray-900 text-white p-6 transform ${
+                className={`!sticky top-0 left-0 w-64 h-[100vh] bg-gray-900 text-white p-6 transform ${
                     isOpen ? 'translate-x-0' : '-translate-x-full'
                 } md:translate-x-0 md:relative md:block transition-transform duration-300 ease-in-out custom-scrollbar overflow-y-auto`}
             >
