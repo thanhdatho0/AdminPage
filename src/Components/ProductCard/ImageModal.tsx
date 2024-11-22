@@ -1,16 +1,24 @@
 import React from 'react';
 
-const ImageModal: React.FC<{ images: string[]; onClose: () => void }> = ({ images, onClose }) => {
+interface ImageModalProps {
+    images: string[];
+    color: string;
+    onClose: () => void;
+}
+
+const ImageModal: React.FC<ImageModalProps> = ({ images, color, onClose }) => {
     return (
-        <div
-            className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 transition-opacity duration-300">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 transition-opacity duration-300">
             <div className="bg-gray-800 p-6 rounded-lg shadow-2xl max-w-lg w-full animate-fade-in">
-                <button
-                    onClick={onClose}
-                    className="text-white mb-4 self-end px-3 py-1 rounded-full bg-red-500 hover:bg-red-600 transition duration-200"
-                >
-                    Close
-                </button>
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-lg font-medium text-white">Images for {color}</h2>
+                    <button
+                        onClick={onClose}
+                        className="text-white px-3 py-1 rounded-full bg-red-500 hover:bg-red-600 transition duration-200"
+                    >
+                        Close
+                    </button>
+                </div>
                 <div className="grid grid-cols-2 gap-3">
                     {images.map((img, idx) => (
                         <img

@@ -1,31 +1,30 @@
 import Header from "../../Components/PageHeader/Header.tsx";
-import { products as initialProducts } from './ProductsData.tsx';
 import ProductList from "../../Components/ProductList/ProductList.tsx";
 import ProductForm from "../../Components/ProductForm/ProductForm.tsx";
-import { useState } from "react";
-
-interface Product {
-    id: string;
-    name: string;
-    category: string;
-    gender: string;
-    size: string;
-    color: string[];
-    price: number;
-    images: string[];
-    provider: string;
-}
+import {useEffect, useState} from "react";
+import {GetProduct} from "../../ShopModels";
+import {getAllProducts} from "../../api.tsx";
 
 const ProductsPage = () => {
-    const [products, setProducts] = useState<Product[]>(initialProducts);
-    const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+    const [products, setProducts] = useState<GetProduct[]>([]);
+    const [editingProduct, setEditingProduct] = useState<GetProduct | null>(null);
     const [isFormVisible, setIsFormVisible] = useState(false);
 
-    const handleSave = (product: Product) => {
-        if (product.id) {
+    useEffect(() => {
+        const fetchProducts = async () => {
+            const result = await getAllProducts();
+            const products = result?.data ? result.data : [];
+            setProducts(products);
+        };
+
+        fetchProducts().then();
+    }, []);
+
+    const handleSave = (product: GetProduct) => {
+        if (product.productId) {
             // Update an existing product
             setProducts(prevProducts =>
-                prevProducts.map(p => (p.id === product.id ? product : p))
+                prevProducts.map(p => (p.productId === product.productId ? product : p))
             );
         } else {
             // Add a new product
@@ -37,13 +36,13 @@ const ProductsPage = () => {
         closeForm();
     };
 
-    const handleEdit = (product: Product) => {
+    const handleEdit = (product: GetProduct) => {
         setEditingProduct(product);
         setIsFormVisible(true);
     };
 
-    const handleDelete = (id: string) => {
-        setProducts(prevProducts => prevProducts.filter(p => p.id !== id));
+    const handleDelete = (id: number) => {
+        setProducts(prevProducts => prevProducts.filter(p => p.productId !== id));
     };
 
     const openForm = () => {
