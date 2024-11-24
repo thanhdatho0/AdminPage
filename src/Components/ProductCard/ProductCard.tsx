@@ -22,12 +22,12 @@ const ProductCard: React.FC<ProductCardProp> = ({ product, handleImageButtonClic
         <div key={product.productId} className="flex items-start space-x-6 p-6 bg-gray-800 rounded-lg shadow-lg">
             {/* Product Details */}
             <div className="flex-1">
-                <h2 className="text-xl font-bold text-white">{product.name}</h2>
+                <h2 className="text-xl font-bold text-white">{product.name || ""}</h2>
                 <div className="text-sm text-gray-300 space-y-1 mt-2">
-                    <p><span className="font-medium text-gray-400">Size:</span> {product.sizes.map(x => x.sizeValue).join(", ")}</p>
-                    <p><span className="font-medium text-gray-400">Color:</span> {product.colors.map(c => c.name).join(", ")}</p>
+                    <p><span className="font-medium text-gray-400">Size:</span> {product.sizes.map(x => x.sizeValue).join(", ") || undefined}</p>
+                    <p><span className="font-medium text-gray-400">Color:</span> {product.colors.map(c => c.name).join(", ") || ""}</p>
                     <p className="text-lg font-bold text-green-400 mt-2">
-                        Price: {product.price.toLocaleString()}₫
+                        Price: {product.price.toLocaleString() || undefined}₫
                     </p>
                 </div>
             </div>
@@ -39,7 +39,7 @@ const ProductCard: React.FC<ProductCardProp> = ({ product, handleImageButtonClic
                     onChange={(e) => setSelectedColor(e.target.value)}
                     className="w-full p-2 rounded bg-gray-700 text-white"
                 >
-                    {product.colors.map((color) => (
+                    {product?.colors.map((color) => (
                         <option key={color.colorId} value={color.name}>{color.name}</option>
                     ))}
                 </select>

@@ -1,18 +1,23 @@
 export interface Category {
-    CategoryId: number;
-    Name: string;
-    Description: string;
+    categoryId: number;
+    name: string;
+    description: string;
+}
+
+export interface CategoryCreate{
+    name: string;
+    description: string;
 }
 
 export interface Color {
-    ColorId: number;
-    HexaCode: string;
-    Name: string;
+    colorId: number;
+    hexaCode: string;
+    name: string;
 }
 
 export interface Product {
     ProductId: number;
-    Name: string;
+    name: string;
     Price: number;
     Description: string;
     Cost: number;
@@ -58,13 +63,13 @@ export interface ProductMaterial {
 export interface GetProductColor{
     colorId: number;
     hexaCode: string;
-    name: string;
+    name?: string;
     images: Image[];
 }
 
 export interface GetProduct {
     productId: number;
-    name: string;
+    name?: string;
     price: number;
     description: string;
     cost: number;

@@ -2,7 +2,7 @@ import React from 'react';
 
 interface ImageModalProps {
     images: string[];
-    color: string;
+    color?: string;
     onClose: () => void;
 }
 

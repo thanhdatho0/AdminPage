@@ -12,9 +12,9 @@ interface ProductListProps {
 const ProductList: React.FC<ProductListProps> = ({ products, onEdit, onDelete }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentImages, setCurrentImages] = useState<string[]>([]);
-    const [currentColor, setCurrentColor] = useState<string>(''); // Track selected color for modal
+    const [currentColor, setCurrentColor] = useState<string|undefined>(''); // Track selected color for modal
 
-    const handleImageButtonClick = (images: string[], color: string) => {
+    const handleImageButtonClick = (images: string[], color?: string) => {
         setCurrentImages(images);
         setCurrentColor(color);
         setIsModalOpen(true);
