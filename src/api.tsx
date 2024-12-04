@@ -1,13 +1,19 @@
 import axios from "axios";
-import {Category, CategoryCreate, Color, GetProduct} from "./ShopModels";
+import {AllCategoriesDto, Color, GetProduct, Size} from "./ShopModels";
 import {Simulate} from "react-dom/test-utils";
 import error = Simulate.error;
 
 
-export const getAllProducts = async () => {
+export const getAllProducts = async (TargetCustomerId?: string | null, CategoryId?:string | null, SubcategoryId?:string | null) => {
     try {
-        return await axios.get<GetProduct[]>(
-            "http://localhost:5254/api/products"
+        return await axios.get<GetProduct[] | []>(
+            "http://localhost:5254/api/products", {
+                params:{
+                    TargetCustomerId,
+                    CategoryId,
+                    SubcategoryId,
+                }
+            }
         );
     }
     catch {
@@ -21,8 +27,8 @@ export const getAllProducts = async () => {
 
 export const getAllCategories = async () => {
     try {
-        return await axios.get<Category[]>(
-            "http://localhost:5254/api/categories"
+        return await axios.get<AllCategoriesDto[]>(
+            "http://localhost:5254/api/targetCustomers"
         );
     }catch {
         if (axios.isAxiosError(error)) {
@@ -48,18 +54,16 @@ export const getAllColors = async () => {
     }
 }
 
-export const createCategory = async (category: CategoryCreate) => {
-    try {
-        return await axios.post<Color>(
-            "http://localhost:5254/api/colors",
-            category
+export const getAllSizes = async () =>{
+    try{
+        return await axios.get<Size[]>(
+            "http://localhost:5254/api/sizes"
         );
     }catch {
-        if (axios.isAxiosError(error)) {
+        if(axios.isAxiosError(error)) {
             console.log(error.message);
-        }else {
+        }else{
             console.log(error);
         }
     }
-
 }

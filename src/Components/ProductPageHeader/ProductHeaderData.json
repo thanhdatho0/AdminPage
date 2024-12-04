@@ -1,0 +1,41 @@
+[
+  {
+    "targetCustomer": "Nam",
+    "categories": [
+      {
+        "name": "Áo",
+        "subcategories": ["Áo khoác", "Áo phao", "Áo sơ mi"]
+      },
+      {
+        "name": "Quần",
+        "subcategories": ["Quần dài", "Quần short", "Quần jeans"]
+      }
+    ]
+  },
+  {
+    "targetCustomer": "Nữ",
+    "categories": [
+      {
+        "name": "Váy",
+        "subcategories": ["Váy ngắn", "Váy dài", "Váy dạ hội"]
+      },
+      {
+        "name": "Quần",
+        "subcategories": ["Quần legging", "Quần jean", "Quần dài"]
+      }
+    ]
+  },
+  {
+    "targetCustomer": "Trẻ em",
+    "categories": [
+      {
+        "name": "Đồ chơi",
+        "subcategories": ["Đồ chơi giáo dục", "Đồ chơi lắp ráp"]
+      },
+      {
+        "name": "Quần áo",
+        "subcategories": ["Áo thun", "Áo khoác", "Quần short"]
+      }
+    ]
+  }
+]

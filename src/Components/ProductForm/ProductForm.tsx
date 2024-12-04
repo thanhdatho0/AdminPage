@@ -1,56 +1,106 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import { FaTimes } from 'react-icons/fa';
+import {getAllCategories, getAllColors, getAllSizes} from "../../api.tsx";
+import {AllCategoriesDto, CategoryDto, Color, Size, SubCategoryDto} from "../../ShopModels";
+import {FiEdit, FiTrash} from "react-icons/fi";
 
 interface ProductFormProps {
     onSave: (product: any) => void;
-    initialData?: any;
 }
 
-const ProductForm: React.FC<ProductFormProps> = ({ onSave, initialData }) => {
-    const [product, setProduct] = useState(initialData || {
-        name: '',
-        category: '',
-        gender: 'Nam',
-        size: '',
-        color: [],
-        price: 0,
-        images: {}, // Images grouped by color
-        provider: ''
-    });
-    const [categories, setCategories] = useState<string[]>(["T-Shirts", "Jeans", "Jackets"]);
-    const [newCategory, setNewCategory] = useState('');
-    const [showImageModal, setShowImageModal] = useState(false);
-    const [selectedColor, setSelectedColor] = useState('');
-    const [imageInput, setImageInput] = useState('');
 
-    const defaultColors = [
-        "Red", "Blue", "Green", "Yellow", "Purple", "Pink", "Orange", "Black", "White", "Gray",
-        "Brown", "Cyan", "Magenta", "Lime", "Olive", "Navy", "Teal", "Maroon", "Silver", "Gold",
-        "Beige", "Turquoise", "Lavender", "Coral"
-    ];
+const ProductForm: React.FC<ProductFormProps> = ({ onSave}) => {
+
+    const [productName, setProductName] = useState<string>(''); // Đặt tên sản phẩm
+
+    //Chọn category cho sản phẩm hoặc thêm vào 1 category mới
+    const [targetCustomers, setTargetCustomer] = useState<AllCategoriesDto[]>([]);
+    const [selectedTargetCustomer, setSelectedTargetCustomer] = useState<AllCategoriesDto>();
+    const [categories, setCategories] = useState<CategoryDto[]>([]);
+    const [selectedCategory, setSelectedCategory] = useState<CategoryDto>();
+    const [subCategories, setSubCategories] = useState<SubCategoryDto[]>([]);
+    const [selectedSubCategory, setSelectedSubCategory] = useState<SubCategoryDto>();
+    const [newCategory, setNewCategory] = useState<string>('');
+    const [newSubCategory, setNewSubCategory] = useState('');
+    //end
+    const [colors, setColor] = useState<Color[]>([]);
+    const [showImageModal, setShowImageModal] = useState(false);
+    const [selectedColor, setSelectedColor] = useState<string>('');
+    const [colorsChosen, setColorChosen] = useState<string[]>([]);
+    const [imageInput, setImageInput] = useState('');
+    const [images, setImages] = useState<Record<string, string[]>>({});
+
+
+    useEffect(() => {
+        const fetchData = async () =>{
+            const fetchColorsResult = await getAllColors().then(data => data?.data || []);
+            setColor(fetchColorsResult);
+            const fetchCategoriesResult = await getAllCategories().then(data => data?.data || []);
+            setTargetCustomer(fetchCategoriesResult);
+        }
+        fetchData().then();
+    }, []);
 
     const handleSave = () => {
+        const product = {
+            name: productName,
+            targetCustomer: selectedTargetCustomer,
+            category: selectedCategory,
+            subCategory: selectedSubCategory,
+            colors: colorsChosen,
+            images,
+            // Các thuộc tính khác...
+        };
         onSave(product);
     };
 
+
     const addCategory = () => {
-        if (newCategory && !categories.includes(newCategory)) {
-            setCategories([...categories, newCategory]);
-            setProduct({ ...product, category: newCategory });
+        if (newCategory) {
+            const newCat: CategoryDto = {
+                categoryId: Date.now(), // Tạo ID giả
+                name: newCategory,
+                targetCustomerId: selectedTargetCustomer?.targetCustomerId || 0,
+                subcategories: [],
+            };
+            setCategories([...categories, newCat]);
             setNewCategory('');
         }
     };
 
+    const addSubCategory = () => {
+        if (newSubCategory && selectedCategory) {
+            const newSubCat: SubCategoryDto = {
+                subcategoryId: Date.now(), // Tạo ID giả
+                subcategoryName: newSubCategory,
+                description: '',
+                categoryId: selectedCategory.categoryId,
+            };
+            setSubCategories([...subCategories, newSubCat]);
+            setNewSubCategory('');
+        }
+    };
+
+
     const addColor = (selectedColor: string) => {
-        if (selectedColor && !product.color.includes(selectedColor)) {
-            setProduct({ ...product, color: [...product.color, selectedColor], images: { ...product.images, [selectedColor]: [] } });
+        if (selectedColor && !colorsChosen.includes(selectedColor)) {
+            // setProduct({ ...product, color: [...product.color, selectedColor], images: { ...product.images, [selectedColor]: [] } });
+            setColorChosen([...colorsChosen, selectedColor]);
         }
     };
 
     const removeColor = (colorToRemove: string) => {
-        const { ...remainingImages } = product.images;
-        setProduct({ ...product, color: product.color.filter((c: string) => c !== colorToRemove), images: remainingImages });
+        // Cập nhật danh sách màu
+        setColorChosen((prevColors) => prevColors.filter((color) => color !== colorToRemove));
+
+        // Cập nhật hình ảnh liên quan
+        setImages((prevImages) => {
+            const updatedImages = { ...prevImages };
+            delete updatedImages[colorToRemove]; // Xóa khóa liên quan đến màu
+            return updatedImages;
+        });
     };
+
 
     const openImageModal = (color: string) => {
         setSelectedColor(color);
@@ -58,19 +108,22 @@ const ProductForm: React.FC<ProductFormProps> = ({ onSave, initialData }) => {
     };
 
     const addImageForColor = () => {
-        if (imageInput) {
-            const updatedImages = { ...product.images };
-            updatedImages[selectedColor] = [...(updatedImages[selectedColor] || []), imageInput];
-            setProduct({ ...product, images: updatedImages });
+        if (imageInput && selectedColor) {
+            setImages((prev) => ({
+                ...prev,
+                [selectedColor]: [...(prev[selectedColor] || []), imageInput],
+            }));
             setImageInput('');
         }
     };
 
     const removeImage = (color: string, imgIndex: number) => {
-        const updatedImages = { ...product.images };
-        updatedImages[color] = updatedImages[color].filter((_: string, index: number) => index !== imgIndex);
-        setProduct({ ...product, images: updatedImages });
+        setImages((prev) => ({
+            ...prev,
+            [color]: prev[color]?.filter((_, index) => index !== imgIndex) || [],
+        }));
     };
+
 
     return (
         <div className="space-y-4">
@@ -78,10 +131,32 @@ const ProductForm: React.FC<ProductFormProps> = ({ onSave, initialData }) => {
             <input
                 type="text"
                 placeholder="Product Name"
-                value={product.name}
-                onChange={(e) => setProduct({ ...product, name: e.target.value })}
+                value={productName}
+                onChange={(e) => setProductName(e.target.value )}
                 className="w-full p-2 rounded bg-gray-700 text-white"
             />
+
+            {/* Existing fields continued */}
+            <select
+                value= {selectedTargetCustomer?.targetCustomerName || ""}
+                onChange={(e) => {
+                    const selectedValue = e.target.value;
+                    const selectedCustomer = targetCustomers.find(c => c.targetCustomerName === selectedValue);
+                    setSelectedTargetCustomer(selectedCustomer);
+
+                    if (selectedCustomer) {
+                        setCategories(selectedCustomer.categories);
+                    }
+                    }
+                }
+
+                className="w-full p-2 rounded bg-gray-700 text-white"
+            >
+                <option value="">Chọn đối tượng</option>
+                {targetCustomers.map((cat) => (
+                    <option key={cat.targetCustomerId} value={cat.targetCustomerName}>{cat.targetCustomerName}</option>
+                ))}
+            </select>
 
             {/* Category with Add Category */}
             <div>
@@ -89,13 +164,22 @@ const ProductForm: React.FC<ProductFormProps> = ({ onSave, initialData }) => {
                 <div className="flex space-x-2">
                     <select
                         name="category"
-                        value={product.category}
-                        onChange={(e) => setProduct({ ...product, category: e.target.value })}
+                        value={selectedCategory?.name || ""}
+                        onChange={(e) => {
+                            const selectedValue = e.target.value;
+                            const selectedCategory = categories.find(c => c.name === selectedValue);
+                            setSelectedCategory(selectedCategory);
+
+                            if (selectedCategory) {
+                                setSubCategories(selectedCategory.subcategories);
+                            }
+                            }
+                        }
                         className="w-full p-2 rounded bg-gray-700 text-white"
                     >
                         <option value="">Select a category</option>
                         {categories.map((cat) => (
-                            <option key={cat} value={cat}>{cat}</option>
+                            <option key={cat.categoryId} value={cat.name}>{cat.name}</option>
                         ))}
                     </select>
                     <input
@@ -109,24 +193,32 @@ const ProductForm: React.FC<ProductFormProps> = ({ onSave, initialData }) => {
                 </div>
             </div>
 
-            {/* Existing fields continued */}
-            <select
-                value={product.gender}
-                onChange={(e) => setProduct({ ...product, gender: e.target.value })}
-                className="w-full p-2 rounded bg-gray-700 text-white"
-            >
-                <option value="Nam">Nam</option>
-                <option value="Nữ">Nữ</option>
-                <option value="Trẻ em">Trẻ em</option>
-            </select>
+            {/* SubCategory with Add Category */}
+            <div>
+                <label className="block text-sm font-medium text-gray-300">Category</label>
+                <div className="flex space-x-2">
+                    <select
+                        name="subcategory"
+                        value={selectedSubCategory?.subcategoryName || ""}
+                        onChange={(e) => setSelectedSubCategory(subCategories.find(s => s.subcategoryName === e.target.value))}
+                        className="w-full p-2 rounded bg-gray-700 text-white"
+                    >
+                        <option value="">Select a category</option>
+                        {subCategories.map((cat, index) => (
+                            <option key={index} value={cat.subcategoryName}>{cat.subcategoryName}</option>
+                        ))}
+                    </select>
+                    <input
+                        type="text"
+                        placeholder="Enter new subcategory"
+                        value={newSubCategory}
+                        onChange={(e) => setNewSubCategory(e.target.value)}
+                        className="w-full p-2 rounded bg-gray-700 text-white"
+                    />
+                    <button onClick={addSubCategory} className="px-4 py-2 bg-blue-500 text-white rounded">Add</button>
+                </div>
+            </div>
 
-            <input
-                type="text"
-                placeholder="Size"
-                value={product.size}
-                onChange={(e) => setProduct({ ...product, size: e.target.value })}
-                className="w-full p-2 rounded bg-gray-700 text-white"
-            />
 
             {/* Color with Add Color and Image Modal Button */}
             <div className="space-y-2">
@@ -136,16 +228,18 @@ const ProductForm: React.FC<ProductFormProps> = ({ onSave, initialData }) => {
                     className="w-full p-2 rounded bg-gray-700 text-white"
                 >
                     <option value="">Select a color</option>
-                    {defaultColors.map((color) => (
-                        <option key={color} value={color}>{color}</option>
+                    {colors.map((color) => (
+                        <option key={color.colorId} value={color.name}>{color.name}</option>
                     ))}
                 </select>
-                <div className="flex flex-wrap space-x-2 mt-2">
-                    {product.color.map((color: string, index: number) => (
-                        <div key={index} className="flex items-center bg-gray-600 rounded p-2">
+                <div className="">
+                    {colorsChosen.map((color, index: number) => (
+                        <div key={index} className="w-full p-2 rounded bg-gray-700 text-white flex justify-between mt-2">
                             <span className="text-white mr-2">{color}</span>
-                            <button onClick={() => removeColor(color)} className="text-red-500 hover:text-red-700">&times;</button>
-                            <button onClick={() => openImageModal(color)} className="ml-2 text-blue-400">Add Image</button>
+                            <div>
+                                <button onClick={() => removeColor(color)} className="text-blue-500 hover:text-blue-700"><FiEdit size={22}/></button>
+                                <button onClick={() => removeColor(color)} className="ml-2 text-red-400"><FiTrash size={22}/></button>
+                            </div>
                         </div>
                     ))}
                 </div>
@@ -155,15 +249,15 @@ const ProductForm: React.FC<ProductFormProps> = ({ onSave, initialData }) => {
             <input
                 type="number"
                 placeholder="Price (VND)"
-                value={product.price}
-                onChange={(e) => setProduct({ ...product, price: parseFloat(e.target.value) })}
+                // value={product.price}
+                // onChange={(e) => setProduct({ ...product, price: parseFloat(e.target.value) })}
                 className="w-full p-2 rounded bg-gray-700 text-white"
             />
 
             {/* Provider */}
             <select
-                value={product.provider}
-                onChange={(e) => setProduct({ ...product, provider: e.target.value })}
+                // value={product.provider}
+                // onChange={(e) => setProduct({ ...product, provider: e.target.value })}
                 className="w-full p-2 rounded bg-gray-700 text-white"
             >
                 <option value="">Select Provider</option>
@@ -188,7 +282,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ onSave, initialData }) => {
                         />
                         <button onClick={addImageForColor} className="w-full p-2 bg-blue-500 text-white rounded">Add Image</button>
                         <div className="mt-4 flex flex-wrap space-x-2">
-                            {(product.images[selectedColor] || []).map((img: string, index: number) => (
+                            {(images![selectedColor] || []).map((img: string, index: number) => (
                                 <div key={index} className="relative w-16 h-16">
                                     <img src={img} alt={`Product image ${index}`} className="w-full h-full rounded" />
                                     <button onClick={() => removeImage(selectedColor, index)} className="absolute top-0 right-0 text-red-500"><FaTimes /></button>

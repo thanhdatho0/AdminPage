@@ -1,24 +1,35 @@
-import Header from "../../Components/PageHeader/Header.tsx";
+
 import ProductList from "../../Components/ProductList/ProductList.tsx";
 import ProductForm from "../../Components/ProductForm/ProductForm.tsx";
 import {useEffect, useState} from "react";
 import {GetProduct} from "../../ShopModels";
 import {getAllProducts} from "../../api.tsx";
+import ProductPageHeader from "../../Components/ProductPageHeader/ProductPageHeader.tsx";
+import { useSearchParams } from "react-router-dom";
 
 const ProductsPage = () => {
     const [products, setProducts] = useState<GetProduct[]>([]);
-    const [editingProduct, setEditingProduct] = useState<GetProduct | null>(null);
+    const [searchParams] = useSearchParams();
+    // const [editingProduct, setEditingProduct] = useState<GetProduct | null>(null);
     const [isFormVisible, setIsFormVisible] = useState(false);
 
     useEffect(() => {
         const fetchProducts = async () => {
-            const result = await getAllProducts();
+            try{
+                const targetCustomer = searchParams.get("TargetCustomerId");
+                const category = searchParams.get("CategoryId");
+                const subCategory = searchParams.get("SubcategoryId");
+            const result = await getAllProducts(targetCustomer, category, subCategory);
             const products = result?.data ? result.data : [];
             setProducts(products);
+            }
+            catch (error){
+                console.log(error)
+            }
         };
 
-        fetchProducts().then();
-    }, []);
+        fetchProducts();
+    }, [searchParams]);
 
     const handleSave = (product: GetProduct) => {
         if (product.productId) {
@@ -36,8 +47,8 @@ const ProductsPage = () => {
         closeForm();
     };
 
-    const handleEdit = (product: GetProduct) => {
-        setEditingProduct(product);
+    const handleEdit = () => {
+        //setEditingProduct(product);
         setIsFormVisible(true);
     };
 
@@ -46,18 +57,19 @@ const ProductsPage = () => {
     };
 
     const openForm = () => {
-        setEditingProduct(null);  // Clear any product being edited
+        //setEditingProduct(null);  // Clear any product being edited
         setIsFormVisible(true);
     };
 
     const closeForm = () => {
         setIsFormVisible(false);
-        setEditingProduct(null);
+        //setEditingProduct(null);
     };
 
     return (
         <div className="mt-[0.5%] m-auto w-[80%]">
-            <Header title={"Products"} />
+            {/*<Header title={"Products"} />*/}
+            <ProductPageHeader title={"Products"}/>
             <div className="bg-gray-800 p-4 rounded-lg">
                 <button
                     onClick={openForm}
@@ -84,7 +96,6 @@ const ProductsPage = () => {
                         </button>
                         <ProductForm
                             onSave={handleSave}
-                            initialData={editingProduct || undefined}
                         />
                     </div>
                 </div>

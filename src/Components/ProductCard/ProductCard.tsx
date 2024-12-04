@@ -10,11 +10,19 @@ interface ProductCardProp {
 }
 
 const ProductCard: React.FC<ProductCardProp> = ({ product, handleImageButtonClick, onEdit, onDelete }) => {
-    const [selectedColor, setSelectedColor] = useState<string>(product.colors[0].name || '');
+    const [selectedColor, setSelectedColor] = useState<string | undefined>(
+        product.colors?.[0]?.name || "Default Color"
+    );
+
+    // const handleShowImages = () => {
+    //     const ColorWithImages =  product.colors.find(c => c.name === selectedColor);
+    //     const imagesForColor =  ColorWithImages?.images.map(i => i.url) || [];
+    //     handleImageButtonClick(imagesForColor);
+    // };
 
     const handleShowImages = () => {
-        const ColorWithImages =  product.colors.find(c => c.name === selectedColor);
-        const imagesForColor =  ColorWithImages?.images.map(i => i.url) || [];
+        const ColorWithImages = product.colors.find(c => c.name === selectedColor);
+        const imagesForColor = ColorWithImages?.images?.map(i => i.url) || [];
         handleImageButtonClick(imagesForColor);
     };
 
@@ -35,13 +43,20 @@ const ProductCard: React.FC<ProductCardProp> = ({ product, handleImageButtonClic
             {/* Image Button with Color Selection */}
             <div className="flex flex-col items-center space-y-2">
                 <select
-                    value={selectedColor}
+                    value={selectedColor || ""}
                     onChange={(e) => setSelectedColor(e.target.value)}
                     className="w-full p-2 rounded bg-gray-700 text-white"
+                    disabled={!product.colors || product.colors.length === 0}
                 >
-                    {product?.colors.map((color) => (
-                        <option key={color.colorId} value={color.name}>{color.name}</option>
-                    ))}
+                    {product.colors?.length > 0 ? (
+                        product.colors.map((color) => (
+                            <option key={color.colorId} value={color.name}>
+                                {color.name}
+                            </option>
+                        ))
+                    ) : (
+                        <option value="">No colors available</option>
+                    )}
                 </select>
                 <button
                     onClick={handleShowImages}
