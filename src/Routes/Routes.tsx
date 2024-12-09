@@ -10,25 +10,27 @@ import ReportsPage from "../Pages/ReportsPage/ReportsPage.tsx";
 import TeamPage from "../Pages/TeamPage/TeamPage.tsx";
 import SettingsPage from "../Pages/SettingsPage/SettingsPage.tsx";
 import HelpPage from "../Pages/HelpPage/HelpPage.tsx";
+import AddProductPage from "../Pages/AddProductPage/AddProductPage.tsx";
 
 export const router = createBrowserRouter([
-    {
-        path: "/",
-        element: <App />,
-        children: [
-            {path: "dashboard", element: <DashboardPage/>, children: []},
-            {path: "users", element: <UsersPage/>, children: []},
-            {path: "products", element: <ProductsPage/>, children: []},
-            {path: "transactions", element: <TransactionsPage/>, children: []},
-            {path: "revenue", element: <RevenuePage/>, children: []},
-            {path: "reports", element: <ReportsPage/>, children: []},
-            {path: "teams", element: <TeamPage/>, children: []},
-            {path: "settings", element: <SettingsPage/>, children: []},
-            {path: "help", element: <HelpPage/>, children: []},
-        ]
-    },
-    {
-        path: "/login",
-        element: <LoginPage/>,
-    }
+  {
+    path: "/",
+    element: <App />,
+    children: [
+      { path: "dashboard", element: <DashboardPage />, children: [] },
+      { path: "users", element: <UsersPage />, children: [] },
+      { path: "products", element: <ProductsPage />, children: [] },
+      { path: "transactions", element: <TransactionsPage />, children: [] },
+      { path: "revenue", element: <RevenuePage />, children: [] },
+      { path: "reports", element: <ReportsPage />, children: [] },
+      { path: "teams", element: <TeamPage />, children: [] },
+      { path: "settings", element: <SettingsPage />, children: [] },
+      { path: "help", element: <HelpPage />, children: [] },
+      { path: "addProduct", element: <AddProductPage />, children: [] },
+    ],
+  },
+  {
+    path: "/login",
+    element: <LoginPage />,
+  },
 ]);

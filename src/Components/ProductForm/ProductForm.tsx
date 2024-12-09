@@ -1,302 +1,681 @@
-import React, {useEffect, useState} from 'react';
-import { FaTimes } from 'react-icons/fa';
-import {getAllCategories, getAllColors, getAllSizes} from "../../api.tsx";
-import {AllCategoriesDto, CategoryDto, Color, Size, SubCategoryDto} from "../../ShopModels";
-import {FiEdit, FiTrash} from "react-icons/fi";
+import { useEffect, useState } from "react";
+// import { FaTimes } from "react-icons/fa";
+import {
+  getAllCategories,
+  getAllColors,
+  getAllProvider,
+  getAllSizes,
+} from "../../api.tsx";
+import {
+  AllCategoriesDto,
+  CategoryDto,
+  Color,
+  Provider,
+  Size,
+  SubCategoryDto,
+} from "../../ShopModels";
+import { FiEdit, FiTrash } from "react-icons/fi";
+import axios from "axios";
+// import { parse } from "dotenv";
 
-interface ProductFormProps {
-    onSave: (product: any) => void;
-}
+const ProductForm = () => {
+  const [productName, setProductName] = useState<string>(""); // Đặt tên sản phẩm
 
+  const [isFormVisible, setIsFormVisible] = useState(false);
 
-const ProductForm: React.FC<ProductFormProps> = ({ onSave}) => {
+  //Chọn category cho sản phẩm hoặc thêm vào 1 category mới
+  const [targetCustomers, setTargetCustomer] = useState<AllCategoriesDto[]>([]);
+  const [selectedTargetCustomer, setSelectedTargetCustomer] =
+    useState<AllCategoriesDto>();
+  const [categories, setCategories] = useState<CategoryDto[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<CategoryDto>();
+  const [subCategories, setSubCategories] = useState<SubCategoryDto[]>([]);
+  const [selectedSubCategory, setSelectedSubCategory] =
+    useState<SubCategoryDto>();
+  const [newCategoryy, setNewCategory] = useState<string>("");
+  const [newSubCategoryy, setNewSubCategory] = useState<string>("");
+  //end
+  const [colors, setColor] = useState<Color[]>([]);
+  const [colorsChosen, setColorChosen] = useState<Color[]>([]);
+  const [providers, setProviders] = useState<Provider[]>([]);
+  const [providersChosen, setProvidersChosen] = useState<Provider | null>(null);
 
-    const [productName, setProductName] = useState<string>(''); // Đặt tên sản phẩm
+  const [tmpSelectedSize, setTmpSelectedSize] = useState<Size | null>(null);
+  const [tmpInputQuantity, setTmpInputQuantity] = useState<number | "">("");
+  const [sizes, setSizes] = useState<Size[]>([]);
+  const [productDetails, setProductDetails] = useState<{
+    [color: number]: {
+      selectedImg: string[];
+      adminSelectedSize: Size[];
+      adminInputQuantity: number[];
+    };
+  }>({});
+  const [currentColor, setCurrentColor] = useState<number>(0);
+  const [cost, setCost] = useState<number>(1);
+  const [price, setPrice] = useState<number>(1);
+  const [discountPercentage, setDiscountPercentage] = useState<number>(0.1);
+  const [description, setDescription] = useState<string>("");
+  const [unit, setUnit] = useState<string>("Cái");
+  const [inputNewCategory, setInputNewCategory] = useState<string>("");
+  const [inputNewSubCategory, setInputNewSubCategory] = useState<string>("");
 
-    //Chọn category cho sản phẩm hoặc thêm vào 1 category mới
-    const [targetCustomers, setTargetCustomer] = useState<AllCategoriesDto[]>([]);
-    const [selectedTargetCustomer, setSelectedTargetCustomer] = useState<AllCategoriesDto>();
-    const [categories, setCategories] = useState<CategoryDto[]>([]);
-    const [selectedCategory, setSelectedCategory] = useState<CategoryDto>();
-    const [subCategories, setSubCategories] = useState<SubCategoryDto[]>([]);
-    const [selectedSubCategory, setSelectedSubCategory] = useState<SubCategoryDto>();
-    const [newCategory, setNewCategory] = useState<string>('');
-    const [newSubCategory, setNewSubCategory] = useState('');
-    //end
-    const [colors, setColor] = useState<Color[]>([]);
-    const [showImageModal, setShowImageModal] = useState(false);
-    const [selectedColor, setSelectedColor] = useState<string>('');
-    const [colorsChosen, setColorChosen] = useState<string[]>([]);
-    const [imageInput, setImageInput] = useState('');
-    const [images, setImages] = useState<Record<string, string[]>>({});
+  useEffect(() => {
+    const fetchData = async () => {
+      const fetchColorsResult = await getAllColors().then(
+        (data) => data?.data || []
+      );
+      setColor(fetchColorsResult);
 
+      const fetchSizesResult = await getAllSizes().then(
+        (data) => data?.data || []
+      );
+      setSizes(fetchSizesResult);
 
-    useEffect(() => {
-        const fetchData = async () =>{
-            const fetchColorsResult = await getAllColors().then(data => data?.data || []);
-            setColor(fetchColorsResult);
-            const fetchCategoriesResult = await getAllCategories().then(data => data?.data || []);
-            setTargetCustomer(fetchCategoriesResult);
+      const fetchProvidersResult = await getAllProvider().then(
+        (data) => data?.data || []
+      );
+      setProviders(fetchProvidersResult);
+
+      const fetchCategoriesResult = await getAllCategories().then(
+        (data) => data?.data || []
+      );
+      setTargetCustomer(fetchCategoriesResult);
+    };
+    fetchData().then();
+  }, []);
+
+  const openForm = (color: Color) => {
+    setCurrentColor(color.colorId);
+    setTmpInputQuantity("");
+    setIsFormVisible(true);
+  };
+
+  const closeForm = () => {
+    setIsFormVisible(false);
+    setCurrentColor(0);
+  };
+
+  const handleInputCategory = (name: string) => {
+    setNewCategory(name);
+    setInputNewCategory(name);
+  };
+
+  const handleInputSubCategory = (name: string) => {
+    setNewSubCategory(name);
+    setInputNewSubCategory(name);
+  };
+
+  const handleInputUnit = (u: string) => {
+    setUnit(u);
+  };
+
+  const handleAddProvider = (prov: Provider) => {
+    setProvidersChosen(prov);
+  };
+
+  const addColor = (color: Color) => {
+    if (color && !colorsChosen.includes(color)) {
+      setColorChosen([...colorsChosen, color]);
+      setProductDetails((prev) => ({
+        ...prev,
+        [color.colorId]: {
+          selectedImg: [],
+          adminSelectedSize: [],
+          adminInputQuantity: [],
+        },
+      }));
+    }
+  };
+
+  const removeColor = (color: Color) => {
+    setColorChosen(colorsChosen.filter((c) => c !== color));
+    setProductDetails((prev) => {
+      const updated = { ...prev };
+      delete updated[color.colorId];
+      return updated;
+    });
+  };
+
+  const handleSelectImg = (files: FileList | null) => {
+    if (files && files.length > 0) {
+      const file = files[0];
+      const fileURL = URL.createObjectURL(file);
+
+      setProductDetails((prev) => {
+        const currentImages = prev[currentColor]?.selectedImg || [];
+        const nextImages = [...currentImages];
+
+        const emptyIndex = nextImages.findIndex((img) => !img);
+        if (emptyIndex !== -1) {
+          nextImages[emptyIndex] = fileURL;
+        } else {
+          nextImages.push(fileURL);
         }
-        fetchData().then();
-    }, []);
 
-    const handleSave = () => {
-        const product = {
-            name: productName,
-            targetCustomer: selectedTargetCustomer,
-            category: selectedCategory,
-            subCategory: selectedSubCategory,
-            colors: colorsChosen,
-            images,
-            // Các thuộc tính khác...
+        return {
+          ...prev,
+          [currentColor]: {
+            ...prev[currentColor],
+            selectedImg: nextImages,
+          },
         };
-        onSave(product);
-    };
+      });
+    }
+  };
 
+  const handleClickSave = () => {
+    const details = productDetails[currentColor];
 
-    const addCategory = () => {
-        if (newCategory) {
-            const newCat: CategoryDto = {
-                categoryId: Date.now(), // Tạo ID giả
-                name: newCategory,
-                targetCustomerId: selectedTargetCustomer?.targetCustomerId || 0,
-                subcategories: [],
-            };
-            setCategories([...categories, newCat]);
-            setNewCategory('');
+    const hasSizes = details?.adminSelectedSize?.length > 0;
+    const hasQuantities =
+      details?.adminInputQuantity?.some((qty) => qty > 0) || false;
+    const hasImages = details?.selectedImg?.some((img) => img) || false;
+
+    if (!hasSizes || !hasQuantities || !hasImages) {
+      alert("Vui lòng nhập đầy đủ size, số lượng và chọn ít nhất một ảnh!");
+      return;
+    }
+    closeForm();
+  };
+
+  const handleConfirm = () => {
+    if (tmpSelectedSize && Number(tmpInputQuantity) > 0) {
+      setProductDetails((prev) => {
+        const updatedSizes = [...(prev[currentColor]?.adminSelectedSize || [])];
+        const updatedQuantities = [
+          ...(prev[currentColor]?.adminInputQuantity || []),
+        ];
+
+        const sizeIndex = updatedSizes.indexOf(tmpSelectedSize);
+        if (sizeIndex !== -1) {
+          updatedQuantities[sizeIndex] = Number(tmpInputQuantity);
+        } else {
+          updatedSizes.push(tmpSelectedSize);
+          updatedQuantities.push(Number(tmpInputQuantity));
         }
+
+        return {
+          ...prev,
+          [currentColor]: {
+            ...prev[currentColor],
+            adminSelectedSize: updatedSizes,
+            adminInputQuantity: updatedQuantities,
+          },
+        };
+      });
+      setTmpSelectedSize(null);
+      setTmpInputQuantity("");
+    } else {
+      alert("Vui lòng chọn size và nhập số lượng!");
+    }
+  };
+
+  const handleSave = async () => {
+    console.log(selectedSubCategory?.subcategoryId);
+    console.log(productName);
+    const product = {
+      Name: productName,
+      Price: cost,
+      Description: description,
+      Cost: price,
+      Unit: unit,
+      TargetCustomerId: selectedTargetCustomer?.targetCustomerId,
+      DiscountPercentage: discountPercentage,
+
+      // thêm category và subcategory mới
+      ...(inputNewCategory.trim() === selectedCategory?.name && {
+        newCategory: inputNewCategory,
+      }),
+      ...(inputNewSubCategory.trim() ===
+        selectedSubCategory?.subcategoryName && {
+        newSubcategory: inputNewSubCategory,
+      }),
+
+      ...(inputNewCategory.trim() !== selectedCategory?.name && {
+        CategoryId: selectedCategory?.categoryId,
+      }),
+      ...(inputNewCategory.trim() === selectedCategory?.name && {
+        CategoryId: 0,
+      }),
+
+      ...(inputNewSubCategory.trim() ===
+        selectedSubCategory?.subcategoryName && {
+        SubcategoryId: 0,
+      }),
+      ...(inputNewSubCategory.trim() !==
+        selectedSubCategory?.subcategoryName && {
+        SubcategoryId: selectedSubCategory?.subcategoryId,
+      }),
+      ProviderId: providersChosen?.providerId,
+      Inventory: Object.entries(productDetails).map(([color, value]) => ({
+        color: {
+          colorId: parseInt(color),
+          images: value.selectedImg.map((img) => ({
+            url: img,
+            alt: "Ảnh sản phẩm",
+          })),
+        },
+        sizes: value.adminSelectedSize.map((size, index) => ({
+          sizeId: size.sizeId,
+          quantity: value.adminInputQuantity[index],
+        })),
+      })),
     };
 
-    const addSubCategory = () => {
-        if (newSubCategory && selectedCategory) {
-            const newSubCat: SubCategoryDto = {
-                subcategoryId: Date.now(), // Tạo ID giả
-                subcategoryName: newSubCategory,
-                description: '',
-                categoryId: selectedCategory.categoryId,
-            };
-            setSubCategories([...subCategories, newSubCat]);
-            setNewSubCategory('');
+    console.log(product.newCategory);
+    console.log(product.newSubcategory);
+    console.log(product.CategoryId);
+    console.log(product.SubcategoryId);
+    console.log(product);
+    setNewCategory("");
+    setNewSubCategory("");
+    setInputNewCategory("");
+    setInputNewSubCategory("");
+
+    try {
+      const response = await axios.post(
+        "http://localhost:5254/api/products",
+        JSON.stringify(product),
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
-    };
+      );
 
-
-    const addColor = (selectedColor: string) => {
-        if (selectedColor && !colorsChosen.includes(selectedColor)) {
-            // setProduct({ ...product, color: [...product.color, selectedColor], images: { ...product.images, [selectedColor]: [] } });
-            setColorChosen([...colorsChosen, selectedColor]);
+      console.log(response.data);
+      alert("Sản phẩm đã được lưu thành công!");
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          console.log("Error response: ", error.response.data);
+          alert(
+            `Lỗi khi lưu sản phẩm: ${
+              error.response.data.message || error.response.status
+            }`
+          );
+        } else if (error.request) {
+          alert("Không nhận được phản hồi từ server.");
+        } else {
+          console.error("Lỗi khi gọi API:", error.message);
+          alert("Đã xảy ra lỗi khi lưu sản phẩm.");
         }
-    };
+      } else {
+        console.error("Lỗi không xác định:", error);
+        alert("Đã xảy ra lỗi không xác định.");
+      }
+    }
+  };
 
-    const removeColor = (colorToRemove: string) => {
-        // Cập nhật danh sách màu
-        setColorChosen((prevColors) => prevColors.filter((color) => color !== colorToRemove));
+  const addCategory = () => {
+    if (newCategoryy) {
+      const newCat: CategoryDto = {
+        categoryId: Date.now(), // Tạo ID giả
+        name: newCategoryy,
+        targetCustomerId: selectedTargetCustomer?.targetCustomerId || 0,
+        subcategories: [],
+      };
+      setCategories([...categories, newCat]);
+      setNewCategory("");
+    }
+  };
 
-        // Cập nhật hình ảnh liên quan
-        setImages((prevImages) => {
-            const updatedImages = { ...prevImages };
-            delete updatedImages[colorToRemove]; // Xóa khóa liên quan đến màu
-            return updatedImages;
-        });
-    };
+  const addSubCategory = () => {
+    if (newSubCategoryy && selectedCategory) {
+      const newSubCat: SubCategoryDto = {
+        subcategoryId: Date.now(), // Tạo ID giả
+        subcategoryName: newSubCategoryy,
+        description: "",
+        categoryId: selectedCategory.categoryId,
+      };
+      setSubCategories([...subCategories, newSubCat]);
+      setNewSubCategory("");
+    }
+  };
 
+  return (
+    <div className="space-y-4">
+      {/* Existing fields */}
+      <input
+        type="text"
+        placeholder="Product Name"
+        value={productName}
+        onChange={(e) => setProductName(e.target.value)}
+        className="w-full p-2 rounded bg-gray-700 text-white"
+      />
 
-    const openImageModal = (color: string) => {
-        setSelectedColor(color);
-        setShowImageModal(true);
-    };
+      {/* Existing fields continued */}
+      <select
+        value={selectedTargetCustomer?.targetCustomerName || ""}
+        onChange={(e) => {
+          const selectedValue = e.target.value;
+          const selectedCustomer = targetCustomers.find(
+            (c) => c.targetCustomerName === selectedValue
+          );
+          setSelectedTargetCustomer(selectedCustomer);
 
-    const addImageForColor = () => {
-        if (imageInput && selectedColor) {
-            setImages((prev) => ({
-                ...prev,
-                [selectedColor]: [...(prev[selectedColor] || []), imageInput],
-            }));
-            setImageInput('');
-        }
-    };
+          if (selectedCustomer) {
+            setCategories(selectedCustomer.categories);
+          }
+        }}
+        className="w-full p-2 rounded bg-gray-700 text-white"
+      >
+        <option value="">Chọn đối tượng</option>
+        {targetCustomers.map((cat) => (
+          <option key={cat.targetCustomerId} value={cat.targetCustomerName}>
+            {cat.targetCustomerName}
+          </option>
+        ))}
+      </select>
 
-    const removeImage = (color: string, imgIndex: number) => {
-        setImages((prev) => ({
-            ...prev,
-            [color]: prev[color]?.filter((_, index) => index !== imgIndex) || [],
-        }));
-    };
+      {/* Category with Add Category */}
+      <div>
+        <label className="block text-sm font-medium text-gray-300">
+          Category
+        </label>
+        <div className="flex space-x-2">
+          <select
+            name="category"
+            value={selectedCategory?.name || ""}
+            onChange={(e) => {
+              const selectedValue = e.target.value;
+              const selectedCategory = categories.find(
+                (c) => c.name === selectedValue
+              );
+              setSelectedCategory(selectedCategory);
 
-
-    return (
-        <div className="space-y-4">
-            {/* Existing fields */}
-            <input
-                type="text"
-                placeholder="Product Name"
-                value={productName}
-                onChange={(e) => setProductName(e.target.value )}
-                className="w-full p-2 rounded bg-gray-700 text-white"
-            />
-
-            {/* Existing fields continued */}
-            <select
-                value= {selectedTargetCustomer?.targetCustomerName || ""}
-                onChange={(e) => {
-                    const selectedValue = e.target.value;
-                    const selectedCustomer = targetCustomers.find(c => c.targetCustomerName === selectedValue);
-                    setSelectedTargetCustomer(selectedCustomer);
-
-                    if (selectedCustomer) {
-                        setCategories(selectedCustomer.categories);
-                    }
-                    }
-                }
-
-                className="w-full p-2 rounded bg-gray-700 text-white"
-            >
-                <option value="">Chọn đối tượng</option>
-                {targetCustomers.map((cat) => (
-                    <option key={cat.targetCustomerId} value={cat.targetCustomerName}>{cat.targetCustomerName}</option>
-                ))}
-            </select>
-
-            {/* Category with Add Category */}
-            <div>
-                <label className="block text-sm font-medium text-gray-300">Category</label>
-                <div className="flex space-x-2">
-                    <select
-                        name="category"
-                        value={selectedCategory?.name || ""}
-                        onChange={(e) => {
-                            const selectedValue = e.target.value;
-                            const selectedCategory = categories.find(c => c.name === selectedValue);
-                            setSelectedCategory(selectedCategory);
-
-                            if (selectedCategory) {
-                                setSubCategories(selectedCategory.subcategories);
-                            }
-                            }
-                        }
-                        className="w-full p-2 rounded bg-gray-700 text-white"
-                    >
-                        <option value="">Select a category</option>
-                        {categories.map((cat) => (
-                            <option key={cat.categoryId} value={cat.name}>{cat.name}</option>
-                        ))}
-                    </select>
-                    <input
-                        type="text"
-                        placeholder="Enter new category"
-                        value={newCategory}
-                        onChange={(e) => setNewCategory(e.target.value)}
-                        className="w-full p-2 rounded bg-gray-700 text-white"
-                    />
-                    <button onClick={addCategory} className="px-4 py-2 bg-blue-500 text-white rounded">Add</button>
-                </div>
-            </div>
-
-            {/* SubCategory with Add Category */}
-            <div>
-                <label className="block text-sm font-medium text-gray-300">Category</label>
-                <div className="flex space-x-2">
-                    <select
-                        name="subcategory"
-                        value={selectedSubCategory?.subcategoryName || ""}
-                        onChange={(e) => setSelectedSubCategory(subCategories.find(s => s.subcategoryName === e.target.value))}
-                        className="w-full p-2 rounded bg-gray-700 text-white"
-                    >
-                        <option value="">Select a category</option>
-                        {subCategories.map((cat, index) => (
-                            <option key={index} value={cat.subcategoryName}>{cat.subcategoryName}</option>
-                        ))}
-                    </select>
-                    <input
-                        type="text"
-                        placeholder="Enter new subcategory"
-                        value={newSubCategory}
-                        onChange={(e) => setNewSubCategory(e.target.value)}
-                        className="w-full p-2 rounded bg-gray-700 text-white"
-                    />
-                    <button onClick={addSubCategory} className="px-4 py-2 bg-blue-500 text-white rounded">Add</button>
-                </div>
-            </div>
-
-
-            {/* Color with Add Color and Image Modal Button */}
-            <div className="space-y-2">
-                <select
-                    value=""
-                    onChange={(e) => addColor(e.target.value)}
-                    className="w-full p-2 rounded bg-gray-700 text-white"
-                >
-                    <option value="">Select a color</option>
-                    {colors.map((color) => (
-                        <option key={color.colorId} value={color.name}>{color.name}</option>
-                    ))}
-                </select>
-                <div className="">
-                    {colorsChosen.map((color, index: number) => (
-                        <div key={index} className="w-full p-2 rounded bg-gray-700 text-white flex justify-between mt-2">
-                            <span className="text-white mr-2">{color}</span>
-                            <div>
-                                <button onClick={() => removeColor(color)} className="text-blue-500 hover:text-blue-700"><FiEdit size={22}/></button>
-                                <button onClick={() => removeColor(color)} className="ml-2 text-red-400"><FiTrash size={22}/></button>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            {/* Price */}
-            <input
-                type="number"
-                placeholder="Price (VND)"
-                // value={product.price}
-                // onChange={(e) => setProduct({ ...product, price: parseFloat(e.target.value) })}
-                className="w-full p-2 rounded bg-gray-700 text-white"
-            />
-
-            {/* Provider */}
-            <select
-                // value={product.provider}
-                // onChange={(e) => setProduct({ ...product, provider: e.target.value })}
-                className="w-full p-2 rounded bg-gray-700 text-white"
-            >
-                <option value="">Select Provider</option>
-                <option value="Provider A">Provider A</option>
-                <option value="Provider B">Provider B</option>
-            </select>
-
-            {/* Image Modal */}
-            {showImageModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                    <div className="bg-white p-4 rounded shadow-lg w-96">
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-lg font-medium">Add Images for {selectedColor}</h2>
-                            <FaTimes onClick={() => setShowImageModal(false)} className="cursor-pointer text-gray-500" />
-                        </div>
-                        <input
-                            type="text"
-                            placeholder="Enter image URL"
-                            value={imageInput}
-                            onChange={(e) => setImageInput(e.target.value)}
-                            className="w-full p-2 mb-4 rounded bg-gray-200"
-                        />
-                        <button onClick={addImageForColor} className="w-full p-2 bg-blue-500 text-white rounded">Add Image</button>
-                        <div className="mt-4 flex flex-wrap space-x-2">
-                            {(images![selectedColor] || []).map((img: string, index: number) => (
-                                <div key={index} className="relative w-16 h-16">
-                                    <img src={img} alt={`Product image ${index}`} className="w-full h-full rounded" />
-                                    <button onClick={() => removeImage(selectedColor, index)} className="absolute top-0 right-0 text-red-500"><FaTimes /></button>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Existing Save Button */}
-            <button onClick={handleSave} className="w-full p-2 bg-blue-500 rounded text-white">Save Product</button>
+              if (selectedCategory) {
+                setSubCategories(selectedCategory.subcategories);
+              }
+            }}
+            className="w-full p-2 rounded bg-gray-700 text-white"
+          >
+            <option value="">Select a category</option>
+            {categories.map((cat) => (
+              <option key={cat.categoryId} value={cat.name}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
+          <input
+            type="text"
+            placeholder="Enter new category"
+            value={newCategoryy}
+            onChange={(e) => handleInputCategory(e.target.value)}
+            className="w-full p-2 rounded bg-gray-700 text-white"
+          />
+          <button
+            onClick={addCategory}
+            className="px-4 py-2 bg-blue-500 text-white rounded"
+          >
+            Add
+          </button>
         </div>
-    );
+      </div>
+
+      {/* SubCategory with Add Category */}
+      <div>
+        <label className="block text-sm font-medium text-gray-300">
+          SubCategory
+        </label>
+        <div className="flex space-x-2">
+          <select
+            name="subcategory"
+            value={selectedSubCategory?.subcategoryName || ""}
+            onChange={(e) =>
+              setSelectedSubCategory(
+                subCategories.find((s) => s.subcategoryName === e.target.value)
+              )
+            }
+            className="w-full p-2 rounded bg-gray-700 text-white"
+          >
+            <option value="">Select a subcategory</option>
+            {subCategories.map((cat, index) => (
+              <option key={index} value={cat.subcategoryName}>
+                {cat.subcategoryName}
+              </option>
+            ))}
+          </select>
+          <input
+            type="text"
+            placeholder="Enter new subcategory"
+            value={newSubCategoryy}
+            onChange={(e) => handleInputSubCategory(e.target.value)}
+            className="w-full p-2 rounded bg-gray-700 text-white"
+          />
+          <button
+            onClick={addSubCategory}
+            className="px-4 py-2 bg-blue-500 text-white rounded"
+          >
+            Add
+          </button>
+        </div>
+      </div>
+
+      {/* Color with Add Color and Image Modal Button */}
+      <div className="space-y-2">
+        <select
+          value=""
+          onChange={(e) => {
+            const selectedColor = colors.find((s) => s.name === e.target.value);
+            if (selectedColor) {
+              addColor(selectedColor);
+            } else {
+              console.error("Selected color not found!");
+            }
+          }}
+          className="w-full p-2 rounded bg-gray-700 text-white"
+        >
+          <option value="">Select a color</option>
+          {colors.map((color) => (
+            <option key={color.colorId} value={color.name}>
+              {color.name}
+            </option>
+          ))}
+        </select>
+        <div className="">
+          {colorsChosen.map((color, index: number) => (
+            <div
+              key={index}
+              className="w-full p-2 rounded bg-gray-700 text-white flex justify-between mt-2"
+            >
+              <span className="text-white mr-2">{color.name}</span>
+              <div>
+                <button
+                  onClick={() => openForm(color)}
+                  className="text-blue-500 hover:text-blue-700"
+                >
+                  <FiEdit size={22} />
+                </button>
+                <button
+                  onClick={() => removeColor(color)}
+                  className="ml-2 text-red-400"
+                >
+                  <FiTrash size={22} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+        {isFormVisible && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg">
+              <button className="mb-2 text-red-500" onClick={closeForm}>
+                Close
+              </button>
+              <div>
+                <select
+                  value={tmpSelectedSize?.sizeValue}
+                  onChange={(e) => {
+                    const selectedSize = sizes.find(
+                      (s) => s.sizeValue === e.target.value
+                    );
+                    if (selectedSize) setTmpSelectedSize(selectedSize);
+                  }}
+                  className="border border-gray-400"
+                >
+                  <option value="">Select a size</option>
+                  {sizes.map((size) => (
+                    <option key={size.sizeId} value={size.sizeValue}>
+                      {size.sizeValue}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  type="number"
+                  min={0}
+                  value={tmpInputQuantity}
+                  onChange={(e) =>
+                    setTmpInputQuantity(
+                      e.target.value === "" ? "" : Number(e.target.value)
+                    )
+                  }
+                  className="border border-blue-400 ml-2"
+                  placeholder="Input quantity"
+                />
+                <button
+                  className="bg-blue-500 text-white ml-2 px-4 py-1 rounded"
+                  onClick={handleConfirm}
+                >
+                  OK
+                </button>
+              </div>
+
+              <div>
+                <strong>Selected:</strong>
+                <div>
+                  {productDetails[currentColor]?.adminSelectedSize.map(
+                    (size, index) => (
+                      <div key={index}>
+                        {size.sizeValue}{" "}
+                        {productDetails[currentColor]?.adminInputQuantity[
+                          index
+                        ] || 0}
+                      </div>
+                    )
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-5 gap-4 mt-4">
+                {[...Array(5)].map((_, index) => (
+                  <div className="relative" key={index}>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      onChange={(e) => handleSelectImg(e.target.files)}
+                    />
+                    <div className="w-16 h-16 border border-gray-300 flex items-center justify-center cursor-pointer hover:bg-gray-100">
+                      {productDetails[currentColor]?.selectedImg[index] ? (
+                        <div className="image-gallery">
+                          <img
+                            src={
+                              productDetails[currentColor]?.selectedImg[index]
+                            }
+                            alt={`Selected Image ${index}`}
+                            className="w-16 h-16 object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <span className="text-gray-500 text-2xl font-bold">
+                          +
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div>
+                <button
+                  className="bg-blue-500 text-white px-4 py-2 my-2 rounded"
+                  onClick={handleClickSave}
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* cost */}
+      <input
+        type="number"
+        placeholder="Cost (VND)"
+        value={cost}
+        onChange={(e) => setCost(parseFloat(e.target.value) || 1)}
+        className="w-full p-2 rounded bg-gray-700 text-white"
+      />
+
+      {/* Price */}
+      <input
+        type="number"
+        placeholder="Price (VND)"
+        value={price}
+        onChange={(e) => setPrice(parseFloat(e.target.value))}
+        className="w-full p-2 rounded bg-gray-700 text-white"
+      />
+
+      {/* DiscountPercentage */}
+      <input
+        type="number"
+        placeholder="Discount Percentage (0.01 - 0.9)"
+        value={discountPercentage}
+        onChange={(e) => setDiscountPercentage(parseFloat(e.target.value))}
+        step="0.01"
+        min="0.01"
+        max="0.9"
+        className="w-full p-2 rounded bg-gray-700 text-white"
+      />
+
+      {/* Unit */}
+      <input
+        type="text"
+        placeholder="Unit"
+        value={unit}
+        onChange={(e) => handleInputUnit(e.target.value)}
+        className="w-full p-2 rounded bg-gray-700 text-white"
+      />
+
+      {/* Provider */}
+      <select
+        value={providersChosen?.providerCompanyName || ""}
+        onChange={(e) => {
+          const selectedProvider = providers.find(
+            (p) => p.providerCompanyName === e.target.value
+          );
+          if (selectedProvider) handleAddProvider(selectedProvider);
+        }}
+        className="w-full p-2 rounded bg-gray-700 text-white"
+      >
+        <option value="">Select Provider</option>
+        {providers.map((provider) => (
+          <option
+            key={provider.providerId}
+            value={provider.providerCompanyName}
+          >
+            {provider.providerCompanyName}
+          </option>
+        ))}
+      </select>
+
+      {/* description */}
+      <textarea
+        placeholder="Enter product description"
+        className="w-full p-2 rounded bg-gray-700 text-white"
+        onChange={(e) => setDescription(e.target.value)}
+      />
+
+      {/* Existing Save Button */}
+      <button
+        onClick={handleSave}
+        className="w-full p-2 bg-blue-500 rounded text-white"
+      >
+        Save Product
+      </button>
+    </div>
+  );
 };
 
 export default ProductForm;

@@ -11,6 +11,13 @@ export interface Color {
     name: string;
 }
 
+export interface Provider{
+    providerId: number;
+    providerEmail: string;
+    providerPhone: string;
+    providerCompanyName: string;
+}
+
 export interface Product {
     ProductId: number;
     name: string;
@@ -81,7 +88,7 @@ export interface GetProduct {
     discountPercentage: number;
     inStock: number;
     isDeleted: boolean;
-    categoryId: number;
+    subcategoryId: number;
     providerId: number;
     sizes: Size[];
     colors: GetProductColor[];
