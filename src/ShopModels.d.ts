@@ -9,6 +9,7 @@ export interface Color {
     colorId: number;
     hexaCode: string;
     name: string;
+    images: Image[];
 }
 
 export interface Provider{
@@ -18,17 +19,17 @@ export interface Provider{
     providerCompanyName: string;
 }
 
-export interface Product {
-    ProductId: number;
-    name: string;
-    Price: number;
-    Description: string;
-    Cost: number;
-    Stock: number;
-    isDeleted: boolean;
-    CategoryId: number;
-    ProviderId: number;
-}
+// export interface Product {
+//     ProductId: number;
+//     name: string;
+//     Price: number;
+//     Description: string;
+//     Cost: number;
+//     Stock: number;
+//     isDeleted: boolean;
+//     CategoryId: number;
+//     ProviderId: number;
+// }
 
 export interface ProductCreateDto{
     name: string;
@@ -115,3 +116,70 @@ export interface AllCategoriesDto {
     alt: string;
     categories: CategoryDto[];
 }
+
+// export interface Product{
+//     name: string;
+//     price: number;
+//     description: string;
+//     cost: number;
+//     unit: string;
+//     targetCustomerId: number;
+//     discountPercentage: number;
+//     newCategory?: string;
+//     newSubcategory?: string;
+//     categoryId: number;
+//     subcategoryId: number;
+//     providerId: number;
+//     inventory: ProductInventory[];
+// }
+
+export interface Product {
+    productId: number;
+    name: string;
+    subcategoryName: string;
+    price: number;
+    description: string;
+    cost: number;
+    discountPercentage: number;
+    inStock: number;
+    isDeleted: boolean;
+    createdAt: string; 
+    updatedAt: string; 
+    subcategoryId: number;
+    providerId: number;
+    sizes: Size[];
+    colors: Color[];
+  }
+
+type ProductInventory = {
+    color: {
+      colorId: number; 
+      images: {
+        url: string; 
+        alt: string; 
+      }[];
+    };
+    sizes: {
+      sizeId: number; 
+      quantity: number; 
+    }[];
+  };
+
+  export interface CategoryItem {
+    categoryId: number;
+    name: string;
+    targetCustomerId: number;
+  }
+  
+  export interface TargetCustomer {
+    targetCustomerId: number;
+    targetCustomerName: string;
+    url: string;
+    alt: string;
+    categories: CategoryItem[];
+  }
+  
+  export interface Inventory{
+    quantity: number;
+    inStock: number;
+  }

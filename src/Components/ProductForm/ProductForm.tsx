@@ -5,11 +5,13 @@ import {
   getAllColors,
   getAllProvider,
   getAllSizes,
+  getTargetCustomerId,
 } from "../../api.tsx";
 import {
   AllCategoriesDto,
   CategoryDto,
   Color,
+  Product,
   Provider,
   Size,
   SubCategoryDto,
@@ -18,7 +20,13 @@ import { FiEdit, FiTrash } from "react-icons/fi";
 import axios from "axios";
 // import { parse } from "dotenv";
 
-const ProductForm = () => {
+interface Props {
+  product?: Product;
+  checkProduct: boolean;
+}
+
+const ProductForm: React.FC<Props> = ({ product, checkProduct }) => {
+  console.log(product?.description);
   const [productName, setProductName] = useState<string>(""); // Đặt tên sản phẩm
 
   const [isFormVisible, setIsFormVisible] = useState(false);
@@ -27,6 +35,7 @@ const ProductForm = () => {
   const [targetCustomers, setTargetCustomer] = useState<AllCategoriesDto[]>([]);
   const [selectedTargetCustomer, setSelectedTargetCustomer] =
     useState<AllCategoriesDto>();
+
   const [categories, setCategories] = useState<CategoryDto[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<CategoryDto>();
   const [subCategories, setSubCategories] = useState<SubCategoryDto[]>([]);
@@ -38,7 +47,7 @@ const ProductForm = () => {
   const [colors, setColor] = useState<Color[]>([]);
   const [colorsChosen, setColorChosen] = useState<Color[]>([]);
   const [providers, setProviders] = useState<Provider[]>([]);
-  const [providersChosen, setProvidersChosen] = useState<Provider | null>(null);
+  const [providersChosen, setProvidersChosen] = useState<Provider>();
 
   const [tmpSelectedSize, setTmpSelectedSize] = useState<Size | null>(null);
   const [tmpInputQuantity, setTmpInputQuantity] = useState<number | "">("");
@@ -80,6 +89,38 @@ const ProductForm = () => {
         (data) => data?.data || []
       );
       setTargetCustomer(fetchCategoriesResult);
+
+      if (product?.subcategoryId) {
+        const fetchTargetCustomer = await getTargetCustomerId(
+          product.subcategoryId
+        ).then((data) => data?.data);
+        console.log(fetchTargetCustomer);
+        console.log(product);
+        fetchTargetCustomer?.map((cat) => {
+          setSelectedTargetCustomer(cat);
+
+          const updatedCategories = cat.categories;
+          setCategories(updatedCategories);
+          setSelectedCategory(updatedCategories[0]);
+
+          const updatedSubCategories = updatedCategories[0].subcategories;
+          setSubCategories(updatedSubCategories);
+
+          const selectedSubCategory = updatedSubCategories.find(
+            (s) => s.subcategoryId === product.subcategoryId
+          );
+          setSelectedSubCategory(selectedSubCategory);
+
+          const selectedProvider = fetchProvidersResult.find(
+            (p) => p.providerId === product.providerId
+          );
+          setProvidersChosen(selectedProvider);
+
+          product.colors.forEach((color) => {
+            addColor(color);
+          });
+        });
+      }
     };
     fetchData().then();
   }, []);
@@ -115,7 +156,12 @@ const ProductForm = () => {
 
   const addColor = (color: Color) => {
     if (color && !colorsChosen.includes(color)) {
-      setColorChosen([...colorsChosen, color]);
+      setColorChosen((prevChosen) => {
+        if (color && !prevChosen.includes(color)) {
+          return [...prevChosen, color];
+        }
+        return prevChosen;
+      });
       setProductDetails((prev) => ({
         ...prev,
         [color.colorId]: {
@@ -213,7 +259,7 @@ const ProductForm = () => {
   const handleSave = async () => {
     console.log(selectedSubCategory?.subcategoryId);
     console.log(productName);
-    const product = {
+    const productt = {
       Name: productName,
       Price: cost,
       Description: description,
@@ -262,28 +308,34 @@ const ProductForm = () => {
       })),
     };
 
-    console.log(product.newCategory);
-    console.log(product.newSubcategory);
-    console.log(product.CategoryId);
-    console.log(product.SubcategoryId);
-    console.log(product);
     setNewCategory("");
     setNewSubCategory("");
     setInputNewCategory("");
     setInputNewSubCategory("");
 
     try {
-      const response = await axios.post(
-        "http://localhost:5254/api/products",
-        JSON.stringify(product),
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      if (checkProduct) {
+        await axios.post(
+          "http://localhost:5254/api/products",
+          JSON.stringify(productt),
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      } else {
+        await axios.put(
+          `http://localhost:5254/api/products/${product?.productId}`,
+          JSON.stringify(productt),
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      }
 
-      console.log(response.data);
       alert("Sản phẩm đã được lưu thành công!");
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -339,7 +391,7 @@ const ProductForm = () => {
       <input
         type="text"
         placeholder="Product Name"
-        value={productName}
+        value={!checkProduct ? product?.name : productName}
         onChange={(e) => setProductName(e.target.value)}
         className="w-full p-2 rounded bg-gray-700 text-white"
       />
@@ -603,7 +655,7 @@ const ProductForm = () => {
       <input
         type="number"
         placeholder="Cost (VND)"
-        value={cost}
+        value={!checkProduct ? product?.cost : cost}
         onChange={(e) => setCost(parseFloat(e.target.value) || 1)}
         className="w-full p-2 rounded bg-gray-700 text-white"
       />
@@ -612,7 +664,7 @@ const ProductForm = () => {
       <input
         type="number"
         placeholder="Price (VND)"
-        value={price}
+        value={!checkProduct ? product?.price : price}
         onChange={(e) => setPrice(parseFloat(e.target.value))}
         className="w-full p-2 rounded bg-gray-700 text-white"
       />
@@ -621,7 +673,7 @@ const ProductForm = () => {
       <input
         type="number"
         placeholder="Discount Percentage (0.01 - 0.9)"
-        value={discountPercentage}
+        value={!checkProduct ? product?.discountPercentage : discountPercentage}
         onChange={(e) => setDiscountPercentage(parseFloat(e.target.value))}
         step="0.01"
         min="0.01"
@@ -664,6 +716,7 @@ const ProductForm = () => {
       <textarea
         placeholder="Enter product description"
         className="w-full p-2 rounded bg-gray-700 text-white"
+        // value={!checkProduct && product?.description ? product.description : ""}
         onChange={(e) => setDescription(e.target.value)}
       />
 

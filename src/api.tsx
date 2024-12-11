@@ -83,3 +83,35 @@ export const getAllSizes = async () => {
     }
   }
 };
+
+export const getTargetCustomerId = async (id: number) => {
+  try {
+    return await axios.get<AllCategoriesDto[]>(
+      `http://localhost:5254/api/targetCustomers?subcategoryId=${id}`
+    );
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.log(error.message);
+    } else {
+      console.log(error);
+    }
+  }
+};
+
+export const getQuantity = async (
+  productId: number,
+  colorId: number,
+  sizeId: number
+) => {
+  try {
+    return await axios.get(
+      `http://localhost:5254/api/inventories?productId=${productId}&colorId=${colorId}&sizeId=${sizeId}`
+    );
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.log(error.message);
+    } else {
+      console.log(error);
+    }
+  }
+};
