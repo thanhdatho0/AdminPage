@@ -47,7 +47,7 @@ const ProductsPage = () => {
       {/*<Header title={"Products"} />*/}
       <ProductPageHeader title={"Products"} />
       <div className="bg-gray-800 p-4 rounded-lg">
-        <Link to="/addProduct">
+        <Link to="/addProduct" state={{ product: null }}>
           <button className="mb-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">
             + Add
           </button>
