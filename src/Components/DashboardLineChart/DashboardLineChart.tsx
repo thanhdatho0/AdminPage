@@ -1,81 +1,161 @@
-
+import React, { useState, useEffect } from "react";
 import {
-    LineChart,
-    Line,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
-    Legend,
-    ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
 } from "recharts";
+import axios from "axios";
 
-const data = [
-    {
-        name: "Page A",
-        uv: 4000,
-        pv: 2400,
-        amt: 2400,
-    },
-    {
-        name: "Page B",
-        uv: 3000,
-        pv: 1398,
-        amt: 2210,
-    },
-    {
-        name: "Page C",
-        uv: 2000,
-        pv: 9800,
-        amt: 2290,
-    },
-    {
-        name: "Page D",
-        uv: 2780,
-        pv: 3908,
-        amt: 2000,
-    },
-    {
-        name: "Page E",
-        uv: 1890,
-        pv: 4800,
-        amt: 2181,
-    },
-    {
-        name: "Page F",
-        uv: 2390,
-        pv: 3800,
-        amt: 2500,
-    },
-    {
-        name: "Page G",
-        uv: 3490,
-        pv: 4300,
-        amt: 2100,
-    },
-];
-
-export default function DashboardLineChart() {
-    return (
-        <div>
-            <h1 className={"text-white"}>Weekly LineChart</h1>
-            <ResponsiveContainer width={"100%"} height={300}>
-                <LineChart data={data}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" padding={{ left: 30, right: 30 }} />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Line
-                        type="monotone"
-                        dataKey="pv"
-                        stroke="#8884d8"
-                        activeDot={{ r: 8 }}
-                    />
-                    <Line type="monotone" dataKey="uv" stroke="#82ca9d" />
-                </LineChart>
-            </ResponsiveContainer>
-        </div>
-
-    );
+// Define the shape of the order data
+interface OrderDetail {
+  productName: string;
+  productPrice: number;
+  priceAfterDiscount: number;
+  size: string;
+  color: string;
+  quantity: number;
 }
+
+interface Order {
+  orderId: number;
+  employeeName: string;
+  orderExportDateTime: string;
+  orderNotice: string;
+  orderDetails: OrderDetail[];
+  totalAmount: number;
+  total: number;
+}
+
+const DashboardBarChart = () => {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [viewType, setViewType] = useState<"monthly" | "yearly">("monthly");
+
+  // Fetch data from the API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get("http://localhost:5254/api/Order");
+        setOrders(response.data);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+      }
+    };
+    fetchData();
+  }, []);
+
+  // Process the data to group by Month or Year and sort by date
+  const processData = () => {
+    const groupedData: { [key: string]: number } = {};
+
+    orders.forEach((order) => {
+      const date = new Date(order.orderExportDateTime);
+      let periodKey: string;
+
+      if (viewType === "monthly") {
+        // Format to "Month Year"
+        periodKey = date.toLocaleString("default", {
+          month: "long",
+          year: "numeric",
+        });
+      } else {
+        // Format to "Year"
+        periodKey = date.getFullYear().toString();
+      }
+
+      order.orderDetails.forEach((detail) => {
+        if (!groupedData[periodKey]) {
+          groupedData[periodKey] = 0;
+        }
+
+        groupedData[periodKey] += detail.productPrice * detail.quantity; // Add productPrice * quantity to the total
+      });
+    });
+
+    // Convert the grouped data into an array for the chart
+    const chartData = Object.keys(groupedData).map((periodKey) => ({
+      name: periodKey,
+      totalPrice: groupedData[periodKey], // Total value for that period
+      date: new Date(periodKey).getTime(), // Convert periodKey to Date object for sorting
+    }));
+
+    // Sort the data by date in ascending order
+    chartData.sort((a, b) => a.date - b.date);
+
+    return chartData;
+  };
+
+  const chartData = processData();
+
+  return (
+    <div>
+      <h1
+        className="text-white"
+        style={{ fontSize: "3rem", fontWeight: "bold", textAlign: "center" }}
+      >
+        Product Sales by {viewType === "monthly" ? "Month" : "Year"}
+      </h1>
+
+      {/* Buttons to toggle between Monthly and Yearly views */}
+      <div style={{ textAlign: "center", margin: "20px 0" }}>
+        <button
+          onClick={() => setViewType("monthly")}
+          style={{
+            padding: "10px 20px",
+            marginRight: "10px",
+            backgroundColor: "#ff7300",
+            border: "none",
+            color: "white",
+            fontSize: "1rem",
+            cursor: "pointer",
+          }}
+        >
+          Monthly Product Sales
+        </button>
+        <button
+          onClick={() => setViewType("yearly")}
+          style={{
+            padding: "10px 20px",
+            backgroundColor: "#ff7300",
+            border: "none",
+            color: "white",
+            fontSize: "1rem",
+            cursor: "pointer",
+          }}
+        >
+          Yearly Product Sales
+        </button>
+      </div>
+
+      <ResponsiveContainer width="100%" height={800}>
+        <BarChart data={chartData}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="name" tick={false} /> {/* Hide X-axis text */}
+          <YAxis tick={false} /> {/* Hide Y-axis text */}
+          <Tooltip
+            contentStyle={{
+              backgroundColor: "#333",
+              color: "#fff",
+              borderRadius: 8,
+            }}
+          />
+          <Legend
+            wrapperStyle={{
+              color: "#fff",
+              fill: "#fff",
+              fontSize: 14,
+              padding: 10,
+            }}
+          />
+          <Bar dataKey="totalPrice" fill="#ff7300" name="Total Price" />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
+export default DashboardBarChart;
