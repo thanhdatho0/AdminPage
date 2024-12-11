@@ -1,11 +1,38 @@
+import React, { useEffect, useState } from "react";
 import Header from "../../Components/PageHeader/Header.tsx";
+import ReportComponent from "../../Components/ReportComponent/ReportComponent.tsx";
 
 const ReportsPage = () => {
-    return (
-        <div className="mt-[0.5%] m-auto w-[80%]">
-            <Header title={"Reports"}/>
-        </div>
-    );
+  const [orders, setOrders] = useState<any[]>([]); // Initialize state for orders
+
+  // Fetch orders data from the API when the component mounts
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const response = await fetch("http://localhost:5254/api/Order");
+        const data = await response.json();
+
+        // Handle any potential errors (e.g. empty or malformed data)
+        if (response.ok && data.length) {
+          setOrders(data); // Update the state with fetched orders
+        } else {
+          console.warn("No orders available or error fetching data.");
+        }
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+      }
+    };
+
+    fetchOrders();
+  }, []); // Empty dependency array means this effect runs only once, when the component mounts
+
+  return (
+    <div className="mt-[0.5%] m-auto w-[80%]">
+      <Header title={"Reports"} />
+      {/* Pass the fetched orders data to ReportComponent */}
+      <ReportComponent orders={orders} />
+    </div>
+  );
 };
 
 export default ReportsPage;

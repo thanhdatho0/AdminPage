@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
-  LineChart,
-  Line,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -31,7 +31,7 @@ interface Order {
   total: number;
 }
 
-const DashboardLineChart = () => {
+const DashboardBarChart = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [viewType, setViewType] = useState<"monthly" | "yearly">("monthly");
 
@@ -72,14 +72,15 @@ const DashboardLineChart = () => {
           groupedData[periodKey] = 0;
         }
 
-        groupedData[periodKey] += detail.productPrice * detail.quantity; // Add productPrice * quantity to the total
+        // Add quantity instead of total price
+        groupedData[periodKey] += detail.quantity; // Sum up the quantity for each period
       });
     });
 
     // Convert the grouped data into an array for the chart
     const chartData = Object.keys(groupedData).map((periodKey) => ({
       name: periodKey,
-      totalPrice: groupedData[periodKey], // Total value for that period
+      quantity: groupedData[periodKey], // Total quantity for that period
       date: new Date(periodKey).getTime(), // Convert periodKey to Date object for sorting
     }));
 
@@ -97,7 +98,7 @@ const DashboardLineChart = () => {
         className="text-white"
         style={{ fontSize: "3rem", fontWeight: "bold", textAlign: "center" }}
       >
-        Product Sales by {viewType === "monthly" ? "Month" : "Year"}
+        Product Quantity by {viewType === "monthly" ? "Month" : "Year"}
       </h1>
 
       {/* Buttons to toggle between Monthly and Yearly views */}
@@ -127,12 +128,12 @@ const DashboardLineChart = () => {
             cursor: "pointer",
           }}
         >
-          Yearly Product Sales
+          Yearly Product Quantity
         </button>
       </div>
 
       <ResponsiveContainer width="100%" height={800}>
-        <LineChart data={chartData}>
+        <BarChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="name" tick={false} /> {/* Hide X-axis text */}
           <YAxis tick={false} /> {/* Hide Y-axis text */}
@@ -151,16 +152,12 @@ const DashboardLineChart = () => {
               padding: 10,
             }}
           />
-          <Line
-            type="monotone"
-            dataKey="totalPrice"
-            stroke="#ff7300"
-            name="Total Price"
-          />
-        </LineChart>
+          <Bar dataKey="quantity" fill="#ff7300" name="Quantity Sold" />{" "}
+          {/* Show Quantity Sold */}
+        </BarChart>
       </ResponsiveContainer>
     </div>
   );
 };
 
-export default DashboardLineChart;
+export default DashboardBarChart;
