@@ -406,9 +406,11 @@ const ProductCard: React.FC<ProductCardProp> = ({
               <FiEdit size={22} />
             </button>
             <button
-              onClick={() => onDelete(product.productId)}
               className="p-2 rounded text-red-400 hover:text-red-600 transition-colors"
-              onClick={() => handleDelete(product.productId)}
+              onClick={() => {
+                onDelete(product.productId);
+                handleDelete(product.productId);
+              }}
               title="Delete Product"
             >
               <FiTrash size={22} />

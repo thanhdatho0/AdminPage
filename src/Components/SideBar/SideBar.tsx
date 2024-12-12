@@ -7,7 +7,6 @@ import {
   AiOutlineShoppingCart,
   AiOutlineTransaction,
   AiOutlineMenu,
-  AiFillAppstore,
 } from "react-icons/ai";
 import { FiSettings, FiHelpCircle, FiLogOut } from "react-icons/fi";
 import { BiDollarCircle, BiBarChartSquare, BiGroup } from "react-icons/bi";

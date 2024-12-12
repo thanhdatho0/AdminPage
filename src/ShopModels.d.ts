@@ -81,18 +81,21 @@ export interface GetProductColor{
 }
 
 export interface GetProduct {
-    productId: number;
-    name: string;
-    price: number;
-    description?: string;
-    cost: number;
-    discountPercentage: number;
-    inStock: number;
-    isDeleted: boolean;
-    subcategoryId: number;
-    providerId: number;
-    sizes: Size[];
-    colors: GetProductColor[];
+  productId: number;
+  name: string;
+  price: number;
+  description?: string;
+  cost: number;
+  discountPercentage: number;
+  inStock: number;
+  isDeleted: boolean;
+  subcategoryId: number;
+  providerId: number;
+  sizes: Size[];
+  colors: GetProductColor[];
+  quantity: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface SubCategoryDto{
