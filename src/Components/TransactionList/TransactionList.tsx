@@ -38,7 +38,7 @@ const TransactionList: React.FC = () => {
   }, []);
 
   // Get the latest 4 transactions
-  const latestTransactions = orders.slice(0, 4);
+  const latestTransactions = orders.slice(orders.length - 4, orders.length);
 
   return (
     <div className="bg-gray-800 p-6 rounded-lg shadow-lg text-white mt-6 mb-6">
@@ -71,7 +71,7 @@ const TransactionList: React.FC = () => {
             <div className="text-center">
               {new Date(order.orderExportDateTime).toLocaleDateString("en-GB")}
             </div>
-            <div className="text-center">${order.total.toFixed(2)}</div>
+            <div className="text-center">{order.total.toFixed(2)}VNĐ</div>
           </div>
         ))}
       </div>

@@ -11,6 +11,7 @@ import TeamPage from "../Pages/TeamPage/TeamPage.tsx";
 import SettingsPage from "../Pages/SettingsPage/SettingsPage.tsx";
 import HelpPage from "../Pages/HelpPage/HelpPage.tsx";
 import AddProductPage from "../Pages/AddProductPage/AddProductPage.tsx";
+import OrderPage from "../Pages/OrderPage/OrderPage.tsx";
 
 export const router = createBrowserRouter([
   {
@@ -27,6 +28,7 @@ export const router = createBrowserRouter([
       { path: "settings", element: <SettingsPage />, children: [] },
       { path: "help", element: <HelpPage />, children: [] },
       { path: "addProduct", element: <AddProductPage />, children: [] },
+      { path: "orders", element: <OrderPage />, children: [] },
     ],
   },
   {
