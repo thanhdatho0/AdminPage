@@ -99,83 +99,9 @@ const ProductForm: React.FC<Props> = ({ product, checkProduct }) => {
         (data) => data?.data || []
       );
       setProducts(fetchProducts);
-
-      // if (product?.subcategoryId) {
-      //   const fetchTargetCustomer = await getTargetCustomerId(
-      //     product.subcategoryId
-      //   ).then((data) => data?.data);
-
-      //   const allInventory = [];
-      //   for (const cat of fetchTargetCustomer || []) {
-      //     setSelectedTargetCustomer(cat);
-
-      //     const updatedCategories = cat.categories;
-      //     setCategories(updatedCategories);
-      //     setSelectedCategory(updatedCategories[0]);
-
-      //     const updatedSubCategories = updatedCategories[0].subcategories;
-      //     setSubCategories(updatedSubCategories);
-
-      //     const selectedSubCategory = updatedSubCategories.find(
-      //       (s) => s.subcategoryId === product.subcategoryId
-      //     );
-      //     setSelectedSubCategory(selectedSubCategory);
-
-      //     const selectedProvider = fetchProvidersResult.find(
-      //       (p) => p.providerId === product.providerId
-      //     );
-      //     setProvidersChosen(selectedProvider);
-
-      //     for (const color of product.colors) {
-      //       addColor(color);
-      //       const inventoryData = await getInventoryAll(
-      //         product.productId,
-      //         color.colorId
-      //       ).then((data) => data?.data || []);
-      //       allInventory.push(...inventoryData);
-      //     }
-      //   }
-      //   setInventory(allInventory);
-      // }
     };
     fetchData().then();
   }, []);
-
-  // useEffect(() => {
-  //   if (inventory.length > 0 && product) {
-  //     const updates = [];
-
-  //     for (const color of product.colors) {
-  //       const filteredInventory = inventory.filter(
-  //         (invent) => invent.colorId === color.colorId
-  //       );
-
-  //       for (const invent of filteredInventory) {
-  //         updates.push({
-  //           colorId: color.colorId,
-  //           size: sizes.find((s) => s.sizeId === invent.sizeId) || null,
-  //           quantity: invent.quantity,
-  //         });
-  //       }
-  //     }
-
-  //     updates.reduce((promise, { colorId, size, quantity }) => {
-  //       return promise.then(() => {
-  //         return new Promise<void>((resolve) => {
-  //           setCurrentColor(colorId);
-  //           setTmpSelectedSize(size);
-  //           setTmpInputQuantity(quantity);
-
-  //           // Đợi trạng thái cập nhật xong trước khi tiếp tục
-  //           setTimeout(() => {
-  //             handleConfirm();
-  //             resolve();
-  //           }, 0);
-  //         });
-  //       });
-  //     }, Promise.resolve());
-  //   }
-  // }, [inventory, sizes, product]);
 
   const openForm = (color: Color) => {
     setCurrentColor(color.colorId);
@@ -332,11 +258,6 @@ const ProductForm: React.FC<Props> = ({ product, checkProduct }) => {
 
     if (colorsChosen.length === 0) {
       alert("Vui lòng chọn ít nhất một màu sắc");
-      return;
-    }
-
-    if (isFormVisible === false) {
-      alert("Vui lòng chọn size, nhập số lượng và thêm ảnh");
       return;
     }
 
