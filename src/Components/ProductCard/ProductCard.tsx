@@ -30,6 +30,8 @@ const ProductCard: React.FC<ProductCardProp> = ({
     cost: product.cost || 0,
   });
   const [isAddingColor, setIsAddingColor] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
+  const [productDetails, setProductDetails] = useState<GetProduct | null>(null); // State to hold product details
 
   useEffect(() => {
     const fetchData = async () => {
@@ -53,6 +55,28 @@ const ProductCard: React.FC<ProductCardProp> = ({
       ...prev,
       [name]: value,
     }));
+  };
+
+  const handleDelete = async (productId: number) => {
+    try {
+      const response = await fetch(
+        `http://localhost:5254/api/products/${productId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (response.ok) {
+        // Call the onDelete prop to remove the product from the list in the parent component
+        onDelete(productId);
+        console.log("Product deleted successfully.");
+        window.location.reload(); // Consider optimizing this reload
+      } else {
+        console.error("Failed to delete product:", await response.text());
+      }
+    } catch (error) {
+      console.error("Error deleting product:", error);
+    }
   };
 
   const handleSave = async () => {
@@ -111,7 +135,22 @@ const ProductCard: React.FC<ProductCardProp> = ({
       handleImageButtonClick([]); // or you can pass a placeholder image URL here
     }
   };
+  const handleShowDetails = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:5254/api/products/${product.productId}`
+      );
+      const productData = await response.json();
+      setProductDetails(productData); // Set the detailed product data
+      setIsModalOpen(true); // Open the modal
+    } catch (error) {
+      console.error("Failed to fetch product details:", error);
+    }
+  };
 
+  const closeModal = () => {
+    setIsModalOpen(false); // Close the modal
+  };
   const handleClickSaveInventory = async () => {
     if (!selectedColor || !tmpSelectedSize || tmpInputQuantity === "") return;
     try {
@@ -208,39 +247,48 @@ const ProductCard: React.FC<ProductCardProp> = ({
         )}
       </div>
 
-      <div className="flex flex-col items-center space-y-2">
-        <select
-          value={selectedColor?.name || ""}
-          onChange={(e) => {
-            const color = colors.find((s) => s.name === e.target.value);
-            setSelectedColor(color || null);
-          }}
-          className="w-full p-2 rounded bg-gray-700 text-white"
-          disabled={product.colors.length === 0}
-        >
-          {product.colors.length > 0 ? (
-            product.colors.map((color) => (
-              <option key={color.colorId} value={color.name}>
-                {color.name}
-              </option>
-            ))
-          ) : (
-            <option value="">No colors available</option>
-          )}
-        </select>
-        <button
-          onClick={handleShowImages}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors w-full"
-        >
-          Show Images
-        </button>
-
-        <button
-          onClick={() => setIsAddingColor(true)}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors w-full"
-        >
-          Add Color
-        </button>
+      <div className="flex flex-col items-center space-y-4">
+        <div className="flex items-center space-x-4 w-full">
+          <select
+            value={selectedColor?.name || ""}
+            onChange={(e) => {
+              const color = colors.find((s) => s.name === e.target.value);
+              setSelectedColor(color || null);
+            }}
+            className="flex-grow p-2 rounded bg-gray-700 text-white h-12"
+            disabled={product.colors.length === 0}
+          >
+            {product.colors.length > 0 ? (
+              product.colors.map((color) => (
+                <option key={color.colorId} value={color.name}>
+                  {color.name}
+                </option>
+              ))
+            ) : (
+              <option value="">No colors available</option>
+            )}
+          </select>
+          <button
+            onClick={handleShowImages}
+            className="bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors h-12 w-40"
+          >
+            Show Images
+          </button>
+        </div>
+        <div className="flex items-center justify-center space-x-4">
+          <button
+            onClick={() => setIsAddingColor(true)}
+            className="bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors h-12 w-40"
+          >
+            Add Color
+          </button>
+          <button
+            onClick={handleShowDetails}
+            className="bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors h-12 w-40"
+          >
+            View Details
+          </button>
+        </div>
       </div>
 
       <div className="flex items-center space-x-3">
@@ -273,6 +321,7 @@ const ProductCard: React.FC<ProductCardProp> = ({
             <button
               onClick={() => onDelete(product.productId)}
               className="p-2 rounded text-red-400 hover:text-red-600 transition-colors"
+              onClick={() => handleDelete(product.productId)}
               title="Delete Product"
             >
               <FiTrash size={22} />
@@ -380,6 +429,76 @@ const ProductCard: React.FC<ProductCardProp> = ({
               >
                 Save
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal for Product Details */}
+      {isModalOpen && productDetails && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 transition-opacity duration-300">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full animate-fade-in">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold text-gray-800">
+                Product Details
+              </h2>
+              <button
+                className="text-white px-4 py-2 rounded-full hover:bg-gray-200 transition duration-300"
+                onClick={closeModal}
+              >
+                ❌
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-xl font-semibold">{productDetails.name}</h3>
+              <p>
+                <strong>Price:</strong> {productDetails.price.toLocaleString()}₫
+              </p>
+              <p>
+                <strong>Description:</strong> {productDetails.description}
+              </p>
+              <p>
+                <strong>Cost:</strong> {productDetails.cost.toLocaleString()}₫
+              </p>
+              <p>
+                <strong>Discount Percentage:</strong>{" "}
+                {productDetails.discountPercentage * 100}%
+              </p>
+              <p>
+                <strong>Quantity in Stock:</strong> {productDetails.quantity}
+              </p>
+              <p>
+                <strong>In Stock:</strong> {productDetails.inStock}
+              </p>
+              <p>
+                <strong>Created At:</strong>{" "}
+                {new Date(productDetails.createdAt).toLocaleString()}
+              </p>
+              <p>
+                <strong>Updated At:</strong>{" "}
+                {new Date(productDetails.updatedAt).toLocaleString()}
+              </p>
+              <div>
+                <strong>Colors:</strong>
+                <ul>
+                  {productDetails.colors.map((color) => (
+                    <li key={color.colorId}>
+                      <span style={{ color: color.hexaCode }}>
+                        {color.name}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <strong>Sizes:</strong>
+                <ul>
+                  {productDetails.sizes.map((size) => (
+                    <li key={size.sizeId}>{size.sizeValue}</li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </div>
         </div>

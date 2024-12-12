@@ -127,6 +127,19 @@ const SideBar = () => {
                   <AiFillAppstore className="mr-2" /> Order
                 </li>
               </Link>
+
+              <Link to={"/deletedProduct"}>
+                <li
+                  className={`flex items-center p-2 rounded-md cursor-pointer ${
+                    activeItem === "deletedProduct"
+                      ? "bg-gray-700"
+                      : "hover:bg-gray-700"
+                  }`}
+                  onClick={() => handleItemClick("deletedProduct")}
+                >
+                  <AiFillAppstore className="mr-2" /> Deleted Product
+                </li>
+              </Link>
             </ul>
           </div>
 
