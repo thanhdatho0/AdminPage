@@ -1,4 +1,6 @@
 import { useContext, useState } from "react";
+import { PiTrashSimple } from "react-icons/pi";
+import { MdOutlineBorderColor } from "react-icons/md";
 import {
   AiOutlineDashboard,
   AiOutlineUser,
@@ -126,7 +128,7 @@ const SideBar = () => {
                   }`}
                   onClick={() => handleItemClick("orders")}
                 >
-                  <AiFillAppstore className="mr-2" /> Order
+                  <MdOutlineBorderColor className="mr-2" /> Order
                 </li>
               </Link>
 
@@ -139,7 +141,7 @@ const SideBar = () => {
                   }`}
                   onClick={() => handleItemClick("deletedProduct")}
                 >
-                  <AiFillAppstore className="mr-2" /> Deleted Product
+                  <PiTrashSimple className="mr-2" /> Deleted Products
                 </li>
               </Link>
             </ul>
