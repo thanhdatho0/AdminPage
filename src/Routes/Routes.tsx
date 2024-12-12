@@ -12,6 +12,7 @@ import SettingsPage from "../Pages/SettingsPage/SettingsPage.tsx";
 import HelpPage from "../Pages/HelpPage/HelpPage.tsx";
 import AddProductPage from "../Pages/AddProductPage/AddProductPage.tsx";
 import OrderPage from "../Pages/OrderPage/OrderPage.tsx";
+import DeletedProductPage from "../Pages/DeletedProductPage/DeletedProductPage.tsx";
 
 export const router = createBrowserRouter([
   {
@@ -29,6 +30,7 @@ export const router = createBrowserRouter([
       { path: "help", element: <HelpPage />, children: [] },
       { path: "addProduct", element: <AddProductPage />, children: [] },
       { path: "orders", element: <OrderPage />, children: [] },
+      { path: "deletedProduct", element: <DeletedProductPage />, children: [] },
     ],
   },
   {
