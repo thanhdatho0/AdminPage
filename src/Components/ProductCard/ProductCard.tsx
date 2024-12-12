@@ -1,12 +1,8 @@
 import React, { useContext, useEffect, useState } from "react";
 import { FiEdit, FiTrash } from "react-icons/fi";
-
-import { BASE_URL } from "../../api";
-
 import { Color, GetProduct, Size } from "../../ShopModels";
 import { getAllColors, getAllSizes } from "../../api";
 import { UserContext } from "../UserContext/UserContext";
-
 interface ProductCardProp {
   product: GetProduct;
   handleImageButtonClick: (images: string[]) => void;
@@ -36,6 +32,8 @@ const ProductCard: React.FC<ProductCardProp> = ({
   const [isAddingColor, setIsAddingColor] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
   const [productDetails, setProductDetails] = useState<GetProduct | null>(null); // State to hold product details
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
   const { user } = useContext(UserContext);
 
   useEffect(() => {
@@ -53,7 +51,38 @@ const ProductCard: React.FC<ProductCardProp> = ({
     };
     fetchData();
   }, []);
+  const productColors = product.colors;
+  const handleAddImage = async () => {
+    if (!imageFile || !selectedColor) {
+      console.warn("No file or color selected.");
+      return;
+    }
 
+    const formData = new FormData();
+    formData.append("file", imageFile);
+    formData.append("productId", String(product.productId));
+    formData.append("colorId", String(selectedColor.colorId));
+
+    try {
+      const response = await fetch("http://localhost:5254/api/images", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${user.accessToken}`, // Add the token in the Authorization header
+        },
+        body: formData,
+      });
+
+      if (response.ok) {
+        console.log("Image uploaded successfully.");
+        setImageFile(null); // Clear the file input
+        setIsPopupOpen(false); // Close the popup
+      } else {
+        console.error("Failed to upload image:", await response.text());
+      }
+    } catch (error) {
+      console.error("Error uploading image:", error);
+    }
+  };
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setEditedProduct((prev) => ({
@@ -64,12 +93,12 @@ const ProductCard: React.FC<ProductCardProp> = ({
 
   const handleDelete = async (productId: number) => {
     try {
-      const response = await fetch(`${BASE_URL}/products/${productId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${user.accessToken}`, // Thêm token vào header
-        },
-      });
+      const response = await fetch(
+        `http://localhost:5254/api/products/${productId}`,
+        {
+          method: "DELETE",
+        }
+      );
 
       if (response.ok) {
         // Call the onDelete prop to remove the product from the list in the parent component
@@ -87,12 +116,11 @@ const ProductCard: React.FC<ProductCardProp> = ({
   const handleSave = async () => {
     try {
       const response = await fetch(
-        `${BASE_URL}/products/${product.productId}`,
+        `http://localhost:5254/api/products/${product.productId}`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${user.accessToken}`,
           },
           body: JSON.stringify(editedProduct),
         }
@@ -143,7 +171,9 @@ const ProductCard: React.FC<ProductCardProp> = ({
   };
   const handleShowDetails = async () => {
     try {
-      const response = await fetch(`${BASE_URL}/products/${product.productId}`);
+      const response = await fetch(
+        `http://localhost:5254/api/products/${product.productId}`
+      );
       const productData = await response.json();
       setProductDetails(productData); // Set the detailed product data
       setIsModalOpen(true); // Open the modal
@@ -158,10 +188,11 @@ const ProductCard: React.FC<ProductCardProp> = ({
   const handleClickSaveInventory = async () => {
     if (!selectedColor || !tmpSelectedSize || tmpInputQuantity === "") return;
     try {
-      const response = await fetch(`${BASE_URL}/inventories`, {
+      const response = await fetch(`http://localhost:5254/api/inventories`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${user.accessToken}`,
         },
         body: JSON.stringify({
           productId: product.productId,
@@ -253,6 +284,7 @@ const ProductCard: React.FC<ProductCardProp> = ({
       </div>
 
       <div className="flex flex-col items-center space-y-4">
+        {/* Row 1: Dropdown and Add Color Button */}
         <div className="flex items-center space-x-4 w-full">
           <select
             value={selectedColor?.name || ""}
@@ -273,29 +305,78 @@ const ProductCard: React.FC<ProductCardProp> = ({
               <option value="">No colors available</option>
             )}
           </select>
-          <button
-            onClick={handleShowImages}
-            className="bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors h-12 w-40"
-          >
-            Show Images
-          </button>
-        </div>
-        <div className="flex items-center justify-center space-x-4">
+
           <button
             onClick={() => setIsAddingColor(true)}
             className="bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors h-12 w-40"
           >
             Add Color
           </button>
+        </div>
+
+        {/* Row 2: Show Images and Add Image Button */}
+        <div className="flex items-center justify-center space-x-4 w-full">
           <button
-            onClick={handleShowDetails}
+            onClick={handleShowImages}
             className="bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors h-12 w-40"
           >
-            View Details
+            Show Images
+          </button>
+          <button
+            onClick={() => setIsPopupOpen(true)}
+            className="bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors h-12 w-40"
+          >
+            Add Image
           </button>
         </div>
       </div>
 
+      {/* Popup for adding image */}
+      {isPopupOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-gray-800 p-6 rounded-lg shadow-lg space-y-4 w-96">
+            <h3 className="text-lg font-bold text-white">Add Image</h3>
+            <select
+              value={selectedColor?.name || ""}
+              onChange={(e) => {
+                const color = productColors.find(
+                  (c) => c.name === e.target.value
+                );
+                setSelectedColor(color || null);
+              }}
+              className="w-full p-2 rounded bg-gray-700 text-white"
+              disabled={productColors.length === 0}
+            >
+              <option value="">Select a color</option>
+              {productColors.map((color) => (
+                <option key={color.colorId} value={color.name}>
+                  {color.name}
+                </option>
+              ))}
+            </select>
+            <input
+              type="file"
+              onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+              className="w-full p-2 text-white"
+            />
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setIsPopupOpen(false)}
+                className="bg-gray-600 text-white rounded px-4 py-2 hover:bg-gray-700"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddImage}
+                className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600"
+                disabled={!imageFile || !selectedColor}
+              >
+                Upload
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="flex items-center space-x-3">
         {isEditing ? (
           <>
@@ -508,6 +589,12 @@ const ProductCard: React.FC<ProductCardProp> = ({
           </div>
         </div>
       )}
+      <button
+        onClick={handleShowDetails}
+        className="bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors py-2 px-4 text-sm"
+      >
+        View Details
+      </button>
     </div>
   );
 };
