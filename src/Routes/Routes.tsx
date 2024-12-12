@@ -18,6 +18,7 @@ import RegisterPage from "../Pages/RegisterPage/RegisterPage.tsx";
 import { useContext } from "react";
 import { UserContext } from "../Components/UserContext/UserContext.tsx";
 import PrivateRoute from "../Components/PrivateRoute/PrivateRoute.tsx";
+import DeletedProductPage from "../Pages/DeletedProductPage/DeletedProductPage.tsx";
 
 const Routes = () => {
   const { user } = useContext(UserContext); // Lấy trạng thái xác thực
@@ -38,7 +39,7 @@ const Routes = () => {
         { path: "help", element: <HelpPage /> },
         { path: "addProduct", element: <AddProductPage /> },
         { path: "orders", element: <OrderPage /> },
-        { path: "deletedProduct", element: <DeletedProductPage />},
+        { path: "deletedProduct", element: <DeletedProductPage /> },
       ],
     },
     {
@@ -52,31 +53,3 @@ const Routes = () => {
 };
 
 export default Routes;
-
-// import DeletedProductPage from "../Pages/DeletedProductPage/DeletedProductPage.tsx";
-
-// export const router = createBrowserRouter([
-//   {
-//     path: "/",
-//     element: <App />,
-//     children: [
-//       { path: "dashboard", element: <DashboardPage />, children: [] },
-//       { path: "users", element: <UsersPage />, children: [] },
-//       { path: "products", element: <ProductsPage />, children: [] },
-//       { path: "transactions", element: <TransactionsPage />, children: [] },
-//       { path: "revenue", element: <RevenuePage />, children: [] },
-//       { path: "reports", element: <ReportsPage />, children: [] },
-//       { path: "teams", element: <TeamPage />, children: [] },
-//       { path: "settings", element: <SettingsPage />, children: [] },
-//       { path: "help", element: <HelpPage />, children: [] },
-//       { path: "addProduct", element: <AddProductPage />, children: [] },
-//       { path: "orders", element: <OrderPage />, children: [] },
-//       { path: "deletedProduct", element: <DeletedProductPage />, children: [] },
-//     ],
-//   },
-//   {
-//     path: "/login",
-//     element: <LoginPage />,
-//   },
-// ]);
-// >>>>>>> master
