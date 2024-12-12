@@ -24,7 +24,7 @@ type Order = {
   confirmed: boolean;
 };
 
-const OrderPage = (props: any) => {
+const OrderPage = () => {
   const { user, logoutContext } = useContext(UserContext);
   const [orders, setOrders] = useState<Order[]>([]);
   const [visibleDetails, setVisibleDetails] = useState<Set<number>>(new Set()); // Track visible order details

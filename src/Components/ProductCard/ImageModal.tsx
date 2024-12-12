@@ -6,7 +6,7 @@ interface ImageModalProps {
   onClose: () => void;
 }
 
-const ImageModal: React.FC<ImageModalProps> = ({ images, color, onClose }) => {
+const ImageModal: React.FC<ImageModalProps> = ({ images, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 transition-opacity duration-300">
       <div className="bg-gray-800 p-6 rounded-lg shadow-2xl max-w-lg w-full animate-fade-in">
