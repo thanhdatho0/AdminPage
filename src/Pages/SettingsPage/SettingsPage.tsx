@@ -8,7 +8,7 @@ const SettingsPage = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const { user } = useContext(UserContext);
+  const { user, logoutContext } = useContext(UserContext);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,8 +33,8 @@ const SettingsPage = () => {
       setErrorMessage("Token không hợp lệ. Vui lòng đăng nhập lại.");
       return;
     }
-
     try {
+      setLoading(true); // Đặt trạng thái loading trước khi thực hiện
       const response = await changePassword(
         user.username,
         oldPassword,
@@ -42,14 +42,17 @@ const SettingsPage = () => {
         confirmPassword,
         user.accessToken
       );
-      setErrorMessage(response); // Assuming the message is returned from `changePassword`
+
+      if (response && response.ok) {
+        alert("Đổi mật khẩu thành công");
+        logoutContext();
+      }
     } catch (error: any) {
       setErrorMessage(error.message || "Không thể kết nối đến máy chủ.");
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <div className="mt-[0.5%] m-auto w-[80%]">
       <Header title={"Settings"} />
