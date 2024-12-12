@@ -21,7 +21,7 @@ const TransactionItem: React.FC<TransactionItemProps> = ({
       </div>
       <p>{quantity} Items</p>
       <p>{date}</p>
-      <p>${totalAmount}</p> {/* Assuming totalAmount is a string or number */}
+      <p>${totalAmount}</p>
     </div>
   );
 };
