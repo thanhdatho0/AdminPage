@@ -18,6 +18,8 @@ interface PersonalInfo {
 
 const UserList = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
     null
   );
@@ -28,11 +30,11 @@ const UserList = () => {
       try {
         const response = await fetch("http://localhost:5254/api/Customer");
         const data = await response.json();
-        // Sort customers by customerId in ascending order
         const sortedData = data.sort(
           (a: Customer, b: Customer) => a.customerId - b.customerId
         );
         setCustomers(sortedData);
+        setFilteredCustomers(sortedData); // Initialize filtered list
       } catch (error) {
         console.error("Error fetching customers:", error);
       }
@@ -41,6 +43,28 @@ const UserList = () => {
     fetchCustomers();
   }, []);
 
+  // Filter customers based on search query
+  useEffect(() => {
+    const lowerCaseQuery = searchQuery.toLowerCase();
+    setFilteredCustomers(
+      customers.filter(
+        (customer) =>
+          customer.personalInfo.firstName
+            .toLowerCase()
+            .includes(lowerCaseQuery) ||
+          customer.personalInfo.lastName
+            .toLowerCase()
+            .includes(lowerCaseQuery) ||
+          customer.email.toLowerCase().includes(lowerCaseQuery) ||
+          customer.personalInfo.phoneNumber.includes(searchQuery)
+      )
+    );
+  }, [searchQuery, customers]);
+
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value);
+  };
+
   const handleEditClick = async (customerId: number) => {
     try {
       const response = await fetch(
@@ -48,7 +72,7 @@ const UserList = () => {
       );
       const data = await response.json();
       setSelectedCustomer(data);
-      setEditedCustomer(data); // Set the editable copy
+      setEditedCustomer(data);
     } catch (error) {
       console.error("Error fetching customer details:", error);
     }
@@ -72,10 +96,7 @@ const UserList = () => {
   const handleSaveClick = async () => {
     if (editedCustomer) {
       try {
-        // Create a FormData object
         const formData = new FormData();
-
-        // Add fields to the FormData object
         formData.append(
           "PersonalInfo.FirstName",
           editedCustomer.personalInfo.firstName
@@ -87,7 +108,7 @@ const UserList = () => {
         formData.append(
           "PersonalInfo.Male",
           String(editedCustomer.personalInfo.male)
-        ); // Convert boolean to string
+        );
         formData.append(
           "PersonalInfo.PhoneNumber",
           editedCustomer.personalInfo.phoneNumber
@@ -102,10 +123,6 @@ const UserList = () => {
         );
         formData.append("Email", editedCustomer.email);
 
-        // Optionally add a file (if required)
-        // Replace `fileInputRef` with your file input reference, if applicable
-        // formData.append("file", fileInputRef.current.files[0]);
-
         const response = await fetch(
           `http://localhost:5254/api/Customer/${editedCustomer.customerId}`,
           {
@@ -117,6 +134,13 @@ const UserList = () => {
         if (response.ok) {
           const updatedCustomer = await response.json();
           setCustomers((prev) =>
+            prev.map((customer) =>
+              customer.customerId === updatedCustomer.customerId
+                ? updatedCustomer
+                : customer
+            )
+          );
+          setFilteredCustomers((prev) =>
             prev.map((customer) =>
               customer.customerId === updatedCustomer.customerId
                 ? updatedCustomer
@@ -141,6 +165,15 @@ const UserList = () => {
 
   return (
     <div className="mt-4 mx-auto w-4/5 bg-white p-6 rounded-lg shadow-md">
+      <div className="mb-4">
+        <input
+          type="text"
+          placeholder="Search by name, email, or phone number"
+          value={searchQuery}
+          onChange={handleSearchChange}
+          className="w-full p-2 border border-gray-300 rounded"
+        />
+      </div>
       <table className="table-auto w-full border-collapse border border-gray-200">
         <thead>
           <tr className="bg-gray-100">
@@ -160,7 +193,7 @@ const UserList = () => {
           </tr>
         </thead>
         <tbody>
-          {customers.map((customer, index) => (
+          {filteredCustomers.map((customer, index) => (
             <tr
               key={customer.customerId}
               className={`${index % 2 === 0 ? "bg-gray-50" : "bg-white"}`}
