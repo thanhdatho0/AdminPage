@@ -1,6 +1,6 @@
 import { FiBell, FiChevronDown } from "react-icons/fi";
 // import menuData from "../ProductPageHeader/ProductHeaderData.json"
-import { BiSearch } from "react-icons/bi";
+// import { BiSearch } from "react-icons/bi";
 import { FaUserCircle } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";

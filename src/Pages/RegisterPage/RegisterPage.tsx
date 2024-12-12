@@ -1,61 +1,91 @@
 import { useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { UserContext } from "../../Components/UserContext/UserContext";
 import { BASE_URL } from "../../api";
+import { UserContext } from "../../Components/UserContext/UserContext";
 
-const LoginPage = () => {
-  const [formData, setFormData] = useState({ username: "", password: "" });
-  const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
+const RegisterPage = () => {
   const { user } = useContext(UserContext);
+  const [formData, setFormData] = useState({
+    username: "",
+    password: "",
+    confirmPassword: "",
+    email: "",
+    phoneNumber: "",
+  });
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    if (user && user.isAuthenticated) navigate("/dashboard");
-  }, []);
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
 
-  const { loginContext } = useContext(UserContext);
+  const validatePassword = (password: string) => {
+    const passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
+    return passwordRegex.test(password);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    const loginPayload = {
+    if (formData.password !== formData.confirmPassword) {
+      setError("Mật khẩu xác nhận không khớp.");
+      setLoading(false);
+      return;
+    }
+
+    if (!validateEmail(formData.email)) {
+      setError("Email không hợp lệ.");
+      setLoading(false);
+      return;
+    }
+
+    if (!validatePassword(formData.password)) {
+      setError(
+        "Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa và ký tự đặc biệt."
+      );
+      setLoading(false);
+      return;
+    }
+
+    const registerPayload = {
       username: formData.username,
       password: formData.password,
+      email: formData.email,
+      phoneNumber: formData.phoneNumber,
     };
 
     try {
-      const response = await fetch(`${BASE_URL}/Account/admin/login`, {
+      const response = await fetch(`${BASE_URL}/account/admin-register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(loginPayload),
-        credentials: "include",
+        body: JSON.stringify(registerPayload),
       });
 
       if (!response.ok) {
         const errorMessage = await response.text();
-        setError(errorMessage || "An error occurred while logging in.");
+        setError(errorMessage || "Đăng ký thất bại. Vui lòng thử lại.");
         return;
       }
-      const token = await response.text(); // Vì API trả về plain text
-      let data = {
-        isAuthenticated: true, // Đăng nhập thành công
-        accessToken: token,
-        username: formData.username,
-      };
-      loginContext(data);
-      navigate("/");
+      alert("Đăng ký thành công");
+      navigate("/login"); // Navigate to the login page after successful registration
     } catch (err) {
-      console.error("Error during login:", err);
-      setError("An unexpected error occurred. Please try again.");
+      console.error("Error during registration:", err);
+      setError("Tài khoản đã tồn tại");
     } finally {
-      setLoading(false); // Kết thúc trạng thái tải
+      setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (user && user.isAuthenticated) {
+      navigate("/dashboard");
+    }
+  }, [user, navigate]);
 
   return (
     <div>
@@ -64,7 +94,7 @@ const LoginPage = () => {
           <div className="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
             <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
               <h1 className="text-center text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
-                Đăng nhập
+                Đăng ký
               </h1>
               <form className="space-y-4 md:space-y-6" onSubmit={handleSubmit}>
                 {error && (
@@ -90,6 +120,38 @@ const LoginPage = () => {
                 </div>
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
+                    className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    placeholder="Nhập email"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                    Số điện thoại
+                  </label>
+                  <input
+                    type="text"
+                    name="phoneNumber"
+                    value={formData.phoneNumber}
+                    onChange={(e) =>
+                      setFormData({ ...formData, phoneNumber: e.target.value })
+                    }
+                    className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    placeholder="Nhập số điện thoại"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                     Mật khẩu
                   </label>
                   <input
@@ -98,6 +160,25 @@ const LoginPage = () => {
                     value={formData.password}
                     onChange={(e) =>
                       setFormData({ ...formData, password: e.target.value })
+                    }
+                    className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    placeholder="••••••••"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                    Xác nhận mật khẩu
+                  </label>
+                  <input
+                    type="password"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        confirmPassword: e.target.value,
+                      })
                     }
                     className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     placeholder="••••••••"
@@ -132,25 +213,17 @@ const LoginPage = () => {
                       ></path>
                     </svg>
                   ) : (
-                    "Đăng nhập"
+                    "Đăng ký"
                   )}
                 </button>
-                <div className="text-center">
-                  <Link
-                    to="/forgot"
-                    className="text-blue-400 hover:underline cursor-pointer"
-                  >
-                    Quên mật khẩu?
-                  </Link>
-                </div>
 
                 <p className="text-sm font-light text-gray-500 dark:text-gray-400">
-                  Chưa có tài khoản?{" "}
+                  Đã có tài khoản?{" "}
                   <Link
-                    to="/register"
+                    to="/login"
                     className="font-medium text-primary-600 hover:underline dark:text-primary-500"
                   >
-                    Đăng ký
+                    Đăng nhập
                   </Link>
                 </p>
               </form>
@@ -162,4 +235,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default RegisterPage;

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import StatsCard from "../StatsCard/StatsCard";
 import stats from "./stats.json";
 import axios from "axios";
+import { BASE_URL } from "../../api";
 
 interface Customer {
   customerId: number;
@@ -23,7 +24,7 @@ const StatsCardList: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get("http://localhost:5254/api/Customer");
+        const response = await axios.get(`${BASE_URL}/Customer`);
         setCustomers(response.data);
       } catch (error) {
         console.error("Error fetching customers:", error);

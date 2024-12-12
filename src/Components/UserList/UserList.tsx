@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { BASE_URL } from "../../api";
 
 interface Customer {
   customerId: number;
@@ -28,7 +29,7 @@ const UserList = () => {
   useEffect(() => {
     const fetchCustomers = async () => {
       try {
-        const response = await fetch("http://localhost:5254/api/Customer");
+        const response = await fetch(`${BASE_URL}/Customer`);
         const data = await response.json();
         const sortedData = data.sort(
           (a: Customer, b: Customer) => a.customerId - b.customerId
@@ -67,9 +68,7 @@ const UserList = () => {
 
   const handleEditClick = async (customerId: number) => {
     try {
-      const response = await fetch(
-        `http://localhost:5254/api/Customer/${customerId}`
-      );
+      const response = await fetch(`${BASE_URL}/Customer/${customerId}`);
       const data = await response.json();
       setSelectedCustomer(data);
       setEditedCustomer(data);
@@ -124,7 +123,7 @@ const UserList = () => {
         formData.append("Email", editedCustomer.email);
 
         const response = await fetch(
-          `http://localhost:5254/api/Customer/${editedCustomer.customerId}`,
+          `${BASE_URL}/Customer/${editedCustomer.customerId}`,
           {
             method: "PUT",
             body: formData,

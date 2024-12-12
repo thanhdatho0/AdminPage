@@ -2,6 +2,7 @@ import axios from "axios";
 import {
   AllCategoriesDto,
   Color,
+  EmailRequest,
   GetProduct,
   Inventory,
   Provider,
@@ -10,22 +11,21 @@ import {
 import { Simulate } from "react-dom/test-utils";
 import error = Simulate.error;
 
+export const BASE_URL = "http://localhost:5254/api";
+
 export const getAllProducts = async (
   TargetCustomerId?: string | null,
   CategoryId?: string | null,
   SubcategoryId?: string | null
 ) => {
   try {
-    return await axios.get<GetProduct[] | []>(
-      "http://localhost:5254/api/products",
-      {
-        params: {
-          TargetCustomerId,
-          CategoryId,
-          SubcategoryId,
-        },
-      }
-    );
+    return await axios.get<GetProduct[] | []>(`${BASE_URL}/products`, {
+      params: {
+        TargetCustomerId,
+        CategoryId,
+        SubcategoryId,
+      },
+    });
   } catch {
     if (axios.isAxiosError(error)) {
       console.log(error.message);
@@ -37,9 +37,7 @@ export const getAllProducts = async (
 
 export const getAllCategories = async () => {
   try {
-    return await axios.get<AllCategoriesDto[]>(
-      "http://localhost:5254/api/targetCustomers"
-    );
+    return await axios.get<AllCategoriesDto[]>(`${BASE_URL}/targetCustomers`);
   } catch {
     if (axios.isAxiosError(error)) {
       console.log(error.message);
@@ -51,7 +49,7 @@ export const getAllCategories = async () => {
 
 export const getAllColors = async () => {
   try {
-    return await axios.get<Color[]>("http://localhost:5254/api/colors");
+    return await axios.get<Color[]>(`${BASE_URL}/colors`);
   } catch {
     if (axios.isAxiosError(error)) {
       console.log(error.message);
@@ -63,7 +61,7 @@ export const getAllColors = async () => {
 
 export const getAllProvider = async () => {
   try {
-    return await axios.get<Provider[]>("http://localhost:5254/api/providers");
+    return await axios.get<Provider[]>(`${BASE_URL}/providers`);
   } catch {
     if (axios.isAxiosError(error)) {
       console.log(error.message);
@@ -75,7 +73,7 @@ export const getAllProvider = async () => {
 
 export const getAllSizes = async () => {
   try {
-    return await axios.get<Size[]>("http://localhost:5254/api/sizes");
+    return await axios.get<Size[]>(`${BASE_URL}/sizes`);
   } catch {
     if (axios.isAxiosError(error)) {
       console.log(error.message);
@@ -88,7 +86,7 @@ export const getAllSizes = async () => {
 export const getTargetCustomerId = async (id: number) => {
   try {
     return await axios.get<AllCategoriesDto[]>(
-      `http://localhost:5254/api/targetCustomers?subcategoryId=${id}`
+      `${BASE_URL}/targetCustomers?subcategoryId=${id}`
     );
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -112,7 +110,7 @@ export const getInventoryAll = async (
     if (sizeId !== undefined) params.append("sizeId", sizeId.toString());
 
     return await axios.get<Inventory[]>(
-      `http://localhost:5254/api/inventories/All?${params.toString()}`
+      `${BASE_URL}/inventories/All?${params.toString()}`
     );
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -120,5 +118,68 @@ export const getInventoryAll = async (
     } else {
       console.log(error);
     }
+  }
+};
+
+export const changePassword = async (
+  userName: string,
+  oldPassword: string,
+  newPassword: string,
+  confirmNewPassword: string,
+  token: string
+): Promise<string> => {
+  const payload = {
+    userName,
+    oldPassword,
+    newPassword,
+    confirmNewPassword,
+  };
+
+  const response = await fetch(`${BASE_URL}/account/change-password`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      errorData.message || "Mật khẩu ít nhất 8, chứa ký tự đặc biệt, chữ hoa"
+    );
+  }
+
+  return "Password changed successfully!";
+};
+
+export const refreshToken = async (accessToken: string) => {
+  const response = await axios.post(
+    `${BASE_URL}/Token/refresh`,
+    {}, // Body request (trống vì bạn chỉ cần gửi token trong header)
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`, // Thêm header Authorization
+      },
+      withCredentials: true, // Đảm bảo với Cookies nếu có
+    }
+  );
+  return response;
+};
+
+export const sendEmail = async (emailRequest: EmailRequest) => {
+  try {
+    const response = await fetch(`${BASE_URL}/EmailSender/send`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(emailRequest),
+    });
+
+    return response;
+  } catch (error) {
+    console.error("Error sending email:", error);
   }
 };
