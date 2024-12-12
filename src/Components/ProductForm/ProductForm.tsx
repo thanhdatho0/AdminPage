@@ -22,6 +22,7 @@ import {
 } from "../../ShopModels";
 import { FiEdit, FiTrash } from "react-icons/fi";
 import axios from "axios";
+import { Link } from "react-router-dom";
 // import { parse } from "dotenv";
 
 interface Props {
@@ -735,8 +736,8 @@ const ProductForm: React.FC<Props> = ({ product, checkProduct }) => {
           <input
             type="number"
             placeholder="Cost (VND)"
-            value={!checkProduct ? product?.cost : cost}
-            onChange={(e) => setCost(parseFloat(e.target.value) || 1)}
+            value={cost}
+            onChange={(e) => setCost(parseFloat(e.target.value))}
             className="w-full p-2 rounded bg-gray-700 text-white"
           />
         </div>
@@ -819,12 +820,13 @@ const ProductForm: React.FC<Props> = ({ product, checkProduct }) => {
         />
 
         {/* Existing Save Button */}
-        <button
+        <Link
+          to="/products"
           onClick={handleSave}
-          className="w-full p-2 bg-blue-500 rounded text-white"
+          className="p-2 bg-blue-500 rounded text-white block w-full text-center"
         >
           Save Product
-        </button>
+        </Link>
       </div>
     </div>
     // </div>
