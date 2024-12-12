@@ -16,7 +16,7 @@ const AddProductPage = () => {
     }
   }, [productToEdit]);
   return (
-    <div>
+    <div className="mt-[0.5%] m-auto w-[80%]">
       <ProductForm product={productToEdit} checkProduct={checkProduct} />
     </div>
   );

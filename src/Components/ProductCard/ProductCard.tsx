@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { FiEdit, FiTrash } from "react-icons/fi";
 import { GetProduct } from "../../ShopModels";
-import { Link } from "react-router-dom";
 
 interface ProductCardProp {
   product: GetProduct;

@@ -1,7 +1,7 @@
 import Header from "../../Components/PageHeader/Header.tsx";
 import StatsCardList from "../../Components/StatsCardList/StatsCardList.tsx";
 import TransactionList from "../../Components/TransactionList/TransactionList.tsx";
-import DashboardLineChart from "../../Components/DashboardLineChart/DashboardLineChart.tsx";
+// import DashboardLineChart from "../../Components/DashboardLineChart/DashboardLineChart.tsx";
 import DashboardQuantity from "../../Components/DashboardQuantity/DashboardQuantity.tsx";
 
 const DashboardPage = () => {
