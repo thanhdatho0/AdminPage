@@ -25,7 +25,7 @@ type Order = {
 };
 
 const OrderPage = (props: any) => {
-  const { user } = useContext(UserContext);
+  const { user, logoutContext } = useContext(UserContext);
   const [orders, setOrders] = useState<Order[]>([]);
   const [visibleDetails, setVisibleDetails] = useState<Set<number>>(new Set()); // Track visible order details
 
@@ -68,6 +68,7 @@ const OrderPage = (props: any) => {
       }
     } catch (error) {
       console.error("Error confirming the order:", error);
+      logoutContext();
     }
   };
 

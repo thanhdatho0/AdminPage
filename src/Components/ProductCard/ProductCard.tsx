@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { FiEdit, FiTrash } from "react-icons/fi";
 import { Color, GetProduct, Size } from "../../ShopModels";
-import { getAllColors, getAllSizes } from "../../api";
+import { BASE_URL, getAllColors, getAllSizes } from "../../api";
 import { UserContext } from "../UserContext/UserContext";
 interface ProductCardProp {
   product: GetProduct;
@@ -34,7 +34,7 @@ const ProductCard: React.FC<ProductCardProp> = ({
   const [productDetails, setProductDetails] = useState<GetProduct | null>(null); // State to hold product details
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const { user } = useContext(UserContext);
+  const { user, logoutContext } = useContext(UserContext);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -64,7 +64,7 @@ const ProductCard: React.FC<ProductCardProp> = ({
     formData.append("colorId", String(selectedColor.colorId));
 
     try {
-      const response = await fetch("http://localhost:5254/api/images", {
+      const response = await fetch(`${BASE_URL}/images`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${user.accessToken}`, // Add the token in the Authorization header
@@ -81,6 +81,7 @@ const ProductCard: React.FC<ProductCardProp> = ({
       }
     } catch (error) {
       console.error("Error uploading image:", error);
+      logoutContext();
     }
   };
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,12 +94,12 @@ const ProductCard: React.FC<ProductCardProp> = ({
 
   const handleDelete = async (productId: number) => {
     try {
-      const response = await fetch(
-        `http://localhost:5254/api/products/${productId}`,
-        {
-          method: "DELETE",
-        }
-      );
+      const response = await fetch(`${BASE_URL}/products/${productId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${user.accessToken}`, // Thêm header Authorization
+        },
+      });
 
       if (response.ok) {
         // Call the onDelete prop to remove the product from the list in the parent component
@@ -116,11 +117,12 @@ const ProductCard: React.FC<ProductCardProp> = ({
   const handleSave = async () => {
     try {
       const response = await fetch(
-        `http://localhost:5254/api/products/${product.productId}`,
+        `${BASE_URL}/products/${product.productId}`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${user.accessToken}`,
           },
           body: JSON.stringify(editedProduct),
         }
@@ -171,9 +173,7 @@ const ProductCard: React.FC<ProductCardProp> = ({
   };
   const handleShowDetails = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:5254/api/products/${product.productId}`
-      );
+      const response = await fetch(`${BASE_URL}/products/${product.productId}`);
       const productData = await response.json();
       setProductDetails(productData); // Set the detailed product data
       setIsModalOpen(true); // Open the modal
@@ -188,7 +188,7 @@ const ProductCard: React.FC<ProductCardProp> = ({
   const handleClickSaveInventory = async () => {
     if (!selectedColor || !tmpSelectedSize || tmpInputQuantity === "") return;
     try {
-      const response = await fetch(`http://localhost:5254/api/inventories`, {
+      const response = await fetch(`${BASE_URL}/inventories`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -211,6 +211,7 @@ const ProductCard: React.FC<ProductCardProp> = ({
       }
     } catch (error) {
       console.error("Error while saving inventory:", error);
+      logoutContext();
     }
   };
 

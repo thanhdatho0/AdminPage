@@ -66,11 +66,12 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     if (user.isAuthenticated) {
       const intervalId = setInterval(() => {
         getAccessToken(user.accessToken);
-      }, 20 * 60 * 1000);
+      }, 25 * 60 * 1000);
 
       return () => clearInterval(intervalId);
     }
   }, [user.accessToken]);
+
   return (
     <UserContext.Provider value={{ user, loginContext, logoutContext }}>
       {children}

@@ -30,7 +30,8 @@ const SettingsPage = () => {
 
     if (!user?.accessToken) {
       setLoading(false);
-      setErrorMessage("Token không hợp lệ. Vui lòng đăng nhập lại.");
+      alert("Token không hợp lệ. Vui lòng đăng nhập lại.");
+      logoutContext();
       return;
     }
     try {

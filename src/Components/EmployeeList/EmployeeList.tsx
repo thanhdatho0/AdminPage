@@ -28,7 +28,7 @@ interface Employee {
 
 const EmployeeList: React.FC = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
-  const { user } = useContext(UserContext);
+  const { user, logoutContext } = useContext(UserContext);
 
   // Fetch employee data from the API
   useEffect(() => {
@@ -43,6 +43,7 @@ const EmployeeList: React.FC = () => {
         setEmployees(response.data);
       } catch (error) {
         console.error("Error fetching employees:", error);
+        logoutContext();
       }
     };
     fetchData();

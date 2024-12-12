@@ -25,7 +25,7 @@ const DeletedProductComponent = () => {
   const [deletedProducts, setDeletedProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useContext(UserContext);
+  const { user, logoutContext } = useContext(UserContext);
 
   // Fetch deleted products from the API
   useEffect(() => {
@@ -69,6 +69,7 @@ const DeletedProductComponent = () => {
       window.location.reload();
     } catch (err) {
       console.error("Failed to restore product", err);
+      logoutContext();
     }
   };
 
