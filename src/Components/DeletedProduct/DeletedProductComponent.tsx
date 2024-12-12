@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
+import { BASE_URL } from "../../api";
+import { UserContext } from "../UserContext/UserContext";
 
 type Product = {
   productId: number;
@@ -23,14 +25,19 @@ const DeletedProductComponent = () => {
   const [deletedProducts, setDeletedProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useContext(UserContext);
 
   // Fetch deleted products from the API
   useEffect(() => {
     const fetchDeletedProducts = async () => {
       try {
-        const response = await fetch(
-          "http://localhost:5254/api/products?IsDelete=true"
-        );
+        const response = await fetch(`${BASE_URL}/products?IsDelete=true`, {
+          method: "GET", // Sử dụng phương thức GET để lấy dữ liệu
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user.accessToken}`, // Thêm token vào header
+          },
+        });
         if (!response.ok) {
           throw new Error("Failed to fetch deleted products");
         }
@@ -49,18 +56,16 @@ const DeletedProductComponent = () => {
   const restoreProduct = async (productId: number) => {
     try {
       // Send a PATCH request to restore the product using fetch
-      const response = await fetch(
-        `http://localhost:5254/api/products/${productId}`,
-        {
-          method: "DELETE", // Use PATCH to update the product
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            isDeleted: false, // Set isDeleted to false to restore the product
-          }),
-        }
-      );
+      const response = await fetch(`${BASE_URL}/products/${productId}`, {
+        method: "DELETE", // Use PATCH to update the product
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user.accessToken}`,
+        },
+        body: JSON.stringify({
+          isDeleted: false, // Set isDeleted to false to restore the product
+        }),
+      });
 
       if (!response.ok) {
         throw new Error("Failed to restore product");

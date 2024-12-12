@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { FiEdit, FiTrash } from "react-icons/fi";
 
 import { BASE_URL } from "../../api";
 
 import { Color, GetProduct, Size } from "../../ShopModels";
 import { getAllColors, getAllSizes } from "../../api";
+import { UserContext } from "../UserContext/UserContext";
 
 interface ProductCardProp {
   product: GetProduct;
@@ -35,6 +36,7 @@ const ProductCard: React.FC<ProductCardProp> = ({
   const [isAddingColor, setIsAddingColor] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
   const [productDetails, setProductDetails] = useState<GetProduct | null>(null); // State to hold product details
+  const { user } = useContext(UserContext);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -62,12 +64,12 @@ const ProductCard: React.FC<ProductCardProp> = ({
 
   const handleDelete = async (productId: number) => {
     try {
-      const response = await fetch(
-        `http://localhost:5254/api/products/${productId}`,
-        {
-          method: "DELETE",
-        }
-      );
+      const response = await fetch(`${BASE_URL}/products/${productId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${user.accessToken}`, // Thêm token vào header
+        },
+      });
 
       if (response.ok) {
         // Call the onDelete prop to remove the product from the list in the parent component
@@ -90,6 +92,7 @@ const ProductCard: React.FC<ProductCardProp> = ({
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${user.accessToken}`,
           },
           body: JSON.stringify(editedProduct),
         }
@@ -140,9 +143,7 @@ const ProductCard: React.FC<ProductCardProp> = ({
   };
   const handleShowDetails = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:5254/api/products/${product.productId}`
-      );
+      const response = await fetch(`${BASE_URL}/products/${product.productId}`);
       const productData = await response.json();
       setProductDetails(productData); // Set the detailed product data
       setIsModalOpen(true); // Open the modal
@@ -157,7 +158,7 @@ const ProductCard: React.FC<ProductCardProp> = ({
   const handleClickSaveInventory = async () => {
     if (!selectedColor || !tmpSelectedSize || tmpInputQuantity === "") return;
     try {
-      const response = await fetch(`http://localhost:5254/api/inventories`, {
+      const response = await fetch(`${BASE_URL}/inventories`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { BASE_URL } from "../../api";
+import { UserContext } from "../UserContext/UserContext";
 
 interface Customer {
   customerId: number;
@@ -25,11 +26,17 @@ const UserList = () => {
     null
   );
   const [editedCustomer, setEditedCustomer] = useState<Customer | null>(null);
+  const { user } = useContext(UserContext);
 
   useEffect(() => {
     const fetchCustomers = async () => {
       try {
-        const response = await fetch(`${BASE_URL}/Customer`);
+        const response = await fetch(`${BASE_URL}/Customer`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user.accessToken}`,
+          },
+        });
         const data = await response.json();
         const sortedData = data.sort(
           (a: Customer, b: Customer) => a.customerId - b.customerId
@@ -68,7 +75,13 @@ const UserList = () => {
 
   const handleEditClick = async (customerId: number) => {
     try {
-      const response = await fetch(`${BASE_URL}/Customer/${customerId}`);
+      const response = await fetch(`${BASE_URL}/Customer/${customerId}`, {
+        method: "GET", // Phương thức GET để lấy thông tin khách hàng
+        headers: {
+          "Content-Type": "application/json", // Bạn có thể thêm Content-Type nếu cần
+          Authorization: `Bearer ${user.accessToken}`, // Thêm token vào header
+        },
+      });
       const data = await response.json();
       setSelectedCustomer(data);
       setEditedCustomer(data);
@@ -126,6 +139,9 @@ const UserList = () => {
           `${BASE_URL}/Customer/${editedCustomer.customerId}`,
           {
             method: "PUT",
+            headers: {
+              Authorization: `Bearer ${user.accessToken}`,
+            },
             body: formData,
           }
         );
