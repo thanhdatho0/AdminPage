@@ -170,6 +170,7 @@ const ProductCard: React.FC<ProductCardProp> = ({
       if (response.ok) {
         const result = await response.json();
         console.log("Inventory updated successfully:", result);
+        window.location.reload();
       } else {
         console.error("Failed to update inventory:", await response.text());
       }
@@ -450,7 +451,7 @@ const ProductCard: React.FC<ProductCardProp> = ({
               </button>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4 h-96 overflow-y-scroll p-4 border rounded bg-gray-100">
               <h3 className="text-xl font-semibold">{productDetails.name}</h3>
               <p>
                 <strong>Price:</strong> {productDetails.price.toLocaleString()}₫
