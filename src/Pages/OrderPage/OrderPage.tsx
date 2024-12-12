@@ -33,7 +33,7 @@ const OrderPage = (props: any) => {
     // Fetch orders from the API
     const fetchOrders = async () => {
       try {
-        const response = await fetch(`${BASE_URL}/api/Order`);
+        const response = await fetch(`${BASE_URL}/Order`);
         const data = await response.json();
         setOrders(data);
       } catch (error) {

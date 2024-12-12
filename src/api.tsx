@@ -127,7 +127,7 @@ export const changePassword = async (
   newPassword: string,
   confirmNewPassword: string,
   token: string
-): Promise<string> => {
+) => {
   const payload = {
     userName,
     oldPassword,
@@ -135,23 +135,27 @@ export const changePassword = async (
     confirmNewPassword,
   };
 
-  const response = await fetch(`${BASE_URL}/account/change-password`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(payload),
-  });
+  try {
+    const response = await fetch(`${BASE_URL}/account/change-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(
-      errorData.message || "Mật khẩu ít nhất 8, chứa ký tự đặc biệt, chữ hoa"
-    );
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData.message || "Mật khẩu ít nhất 8, chứa ký tự đặc biệt, chữ hoa"
+      );
+    }
+
+    return response;
+  } catch (error) {
+    throw new Error(error.message || "Không thể kết nối đến máy chủ.");
   }
-
-  return "Password changed successfully!";
 };
 
 export const refreshToken = async (accessToken: string) => {

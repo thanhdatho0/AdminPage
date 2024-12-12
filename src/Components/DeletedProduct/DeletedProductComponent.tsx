@@ -31,13 +31,7 @@ const DeletedProductComponent = () => {
   useEffect(() => {
     const fetchDeletedProducts = async () => {
       try {
-        const response = await fetch(`${BASE_URL}/products?IsDelete=true`, {
-          method: "GET", // Sử dụng phương thức GET để lấy dữ liệu
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${user.accessToken}`, // Thêm token vào header
-          },
-        });
+        const response = await fetch(`${BASE_URL}/products?IsDelete=true`);
         if (!response.ok) {
           throw new Error("Failed to fetch deleted products");
         }
