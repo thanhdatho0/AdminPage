@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 // import { FaTimes } from "react-icons/fa";
 import {
   BASE_URL,
@@ -24,6 +24,7 @@ import {
 import { FiEdit, FiTrash } from "react-icons/fi";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import { UserContext } from "../UserContext/UserContext.tsx";
 // import { parse } from "dotenv";
 
 interface Props {
@@ -74,6 +75,7 @@ const ProductForm: React.FC<Props> = ({ product, checkProduct }) => {
   const [inputNewSubCategory, setInputNewSubCategory] = useState<string>("");
   const [products, setProducts] = useState<GetProduct[]>([]);
   // const [inventory, setInventory] = useState<Inventory[]>([]);
+  const { user } = useContext(UserContext);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -354,6 +356,7 @@ const ProductForm: React.FC<Props> = ({ product, checkProduct }) => {
           await axios.post(`${BASE_URL}/products`, JSON.stringify(productt), {
             headers: {
               "Content-Type": "application/json",
+              Authorization: `Bearer ${user.accessToken}`,
             },
           });
         } else {
@@ -363,6 +366,7 @@ const ProductForm: React.FC<Props> = ({ product, checkProduct }) => {
             {
               headers: {
                 "Content-Type": "application/json",
+                Authorization: `Bearer ${user.accessToken}`,
               },
             }
           );

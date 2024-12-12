@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import StatsCard from "../StatsCard/StatsCard";
 import stats from "./stats.json";
 import axios from "axios";
 import { BASE_URL } from "../../api";
+import { UserContext } from "../UserContext/UserContext";
 
 interface Customer {
   customerId: number;
@@ -21,10 +22,17 @@ interface PersonalInfo {
 }
 const StatsCardList: React.FC = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const { user } = useContext(UserContext);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`${BASE_URL}/Customer`);
+        const response = await axios.get(`${BASE_URL}/Customer`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user.accessToken}`,
+          },
+        });
         setCustomers(response.data);
       } catch (error) {
         console.error("Error fetching customers:", error);

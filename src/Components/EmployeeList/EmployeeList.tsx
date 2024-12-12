@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import {
   FaPhone,
@@ -8,6 +8,7 @@ import {
   FaMoneyBillAlt,
 } from "react-icons/fa";
 import { BASE_URL } from "../../api";
+import { UserContext } from "../UserContext/UserContext";
 
 // Define the shape of the employee data (from the API)
 interface Employee {
@@ -27,12 +28,18 @@ interface Employee {
 
 const EmployeeList: React.FC = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const { user } = useContext(UserContext);
 
   // Fetch employee data from the API
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`${BASE_URL}/Employee`);
+        const response = await axios.get(`${BASE_URL}/Employee`, {
+          headers: {
+            Authorization: `Bearer ${user.accessToken}`, // Thêm header Authorization
+          },
+          withCredentials: true, // Đảm bảo với Cookies nếu có
+        });
         setEmployees(response.data);
       } catch (error) {
         console.error("Error fetching employees:", error);

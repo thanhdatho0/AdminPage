@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Header from "../../Components/PageHeader/Header";
 import { BASE_URL } from "../../api";
+import { UserContext } from "../../Components/UserContext/UserContext";
 
 type OrderDetail = {
   productName: string;
@@ -24,6 +25,7 @@ type Order = {
 };
 
 const OrderPage = (props: any) => {
+  const { user } = useContext(UserContext);
   const [orders, setOrders] = useState<Order[]>([]);
   const [visibleDetails, setVisibleDetails] = useState<Set<number>>(new Set()); // Track visible order details
 
@@ -49,6 +51,7 @@ const OrderPage = (props: any) => {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${user.accessToken}`,
         },
         body: JSON.stringify({ confirmed: true }),
       });
