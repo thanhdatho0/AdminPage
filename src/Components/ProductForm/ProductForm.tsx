@@ -5,12 +5,14 @@ import {
   getAllColors,
   getAllProvider,
   getAllSizes,
+  getInventoryAll,
   getTargetCustomerId,
 } from "../../api.tsx";
 import {
   AllCategoriesDto,
   CategoryDto,
   Color,
+  Inventory,
   Product,
   Provider,
   Size,
@@ -26,7 +28,6 @@ interface Props {
 }
 
 const ProductForm: React.FC<Props> = ({ product, checkProduct }) => {
-  console.log(product?.description);
   const [productName, setProductName] = useState<string>(""); // Đặt tên sản phẩm
 
   const [isFormVisible, setIsFormVisible] = useState(false);
@@ -67,6 +68,7 @@ const ProductForm: React.FC<Props> = ({ product, checkProduct }) => {
   const [unit, setUnit] = useState<string>("Cái");
   const [inputNewCategory, setInputNewCategory] = useState<string>("");
   const [inputNewSubCategory, setInputNewSubCategory] = useState<string>("");
+  const [inventory, setInventory] = useState<Inventory[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -94,9 +96,9 @@ const ProductForm: React.FC<Props> = ({ product, checkProduct }) => {
         const fetchTargetCustomer = await getTargetCustomerId(
           product.subcategoryId
         ).then((data) => data?.data);
-        console.log(fetchTargetCustomer);
-        console.log(product);
-        fetchTargetCustomer?.map((cat) => {
+
+        const allInventory = [];
+        for (const cat of fetchTargetCustomer || []) {
           setSelectedTargetCustomer(cat);
 
           const updatedCategories = cat.categories;
@@ -116,14 +118,57 @@ const ProductForm: React.FC<Props> = ({ product, checkProduct }) => {
           );
           setProvidersChosen(selectedProvider);
 
-          product.colors.forEach((color) => {
+          for (const color of product.colors) {
             addColor(color);
-          });
-        });
+            const inventoryData = await getInventoryAll(
+              product.productId,
+              color.colorId
+            ).then((data) => data?.data || []);
+            allInventory.push(...inventoryData);
+          }
+        }
+        setInventory(allInventory);
       }
     };
     fetchData().then();
   }, []);
+
+  useEffect(() => {
+    if (inventory.length > 0 && product) {
+      const updates = [];
+
+      for (const color of product.colors) {
+        const filteredInventory = inventory.filter(
+          (invent) => invent.colorId === color.colorId
+        );
+
+        for (const invent of filteredInventory) {
+          updates.push({
+            colorId: color.colorId,
+            size: sizes.find((s) => s.sizeId === invent.sizeId) || null,
+            quantity: invent.quantity,
+          });
+        }
+      }
+
+      // Xử lý tuần tự
+      updates.reduce((promise, { colorId, size, quantity }) => {
+        return promise.then(() => {
+          return new Promise<void>((resolve) => {
+            setCurrentColor(colorId);
+            setTmpSelectedSize(size);
+            setTmpInputQuantity(quantity);
+
+            // Đợi trạng thái cập nhật xong trước khi tiếp tục
+            setTimeout(() => {
+              handleConfirm();
+              resolve();
+            }, 0);
+          });
+        });
+      }, Promise.resolve());
+    }
+  }, [inventory, sizes, product]);
 
   const openForm = (color: Color) => {
     setCurrentColor(color.colorId);
@@ -225,6 +270,7 @@ const ProductForm: React.FC<Props> = ({ product, checkProduct }) => {
   };
 
   const handleConfirm = () => {
+    console.log(currentColor);
     if (tmpSelectedSize && Number(tmpInputQuantity) > 0) {
       setProductDetails((prev) => {
         const updatedSizes = [...(prev[currentColor]?.adminSelectedSize || [])];
@@ -252,7 +298,7 @@ const ProductForm: React.FC<Props> = ({ product, checkProduct }) => {
       setTmpSelectedSize(null);
       setTmpInputQuantity("");
     } else {
-      alert("Vui lòng chọn size và nhập số lượng!");
+      if (checkProduct) alert("Vui lòng chọn size và nhập số lượng!");
     }
   };
 

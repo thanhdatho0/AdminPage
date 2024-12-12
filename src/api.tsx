@@ -3,6 +3,7 @@ import {
   AllCategoriesDto,
   Color,
   GetProduct,
+  Inventory,
   Provider,
   Size,
 } from "./ShopModels";
@@ -98,14 +99,20 @@ export const getTargetCustomerId = async (id: number) => {
   }
 };
 
-export const getQuantity = async (
-  productId: number,
-  colorId: number,
-  sizeId: number
+export const getInventoryAll = async (
+  productId?: number,
+  colorId?: number,
+  sizeId?: number
 ) => {
   try {
-    return await axios.get(
-      `http://localhost:5254/api/inventories?productId=${productId}&colorId=${colorId}&sizeId=${sizeId}`
+    const params = new URLSearchParams();
+    if (productId !== undefined)
+      params.append("productId", productId.toString());
+    if (colorId !== undefined) params.append("colorId", colorId.toString());
+    if (sizeId !== undefined) params.append("sizeId", sizeId.toString());
+
+    return await axios.get<Inventory[]>(
+      `http://localhost:5254/api/inventories/All?${params.toString()}`
     );
   } catch (error) {
     if (axios.isAxiosError(error)) {

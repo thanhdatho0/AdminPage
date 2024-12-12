@@ -182,4 +182,8 @@ type ProductInventory = {
   export interface Inventory{
     quantity: number;
     inStock: number;
+    inventoryId: number;
+    productId: number;
+    colorId: number;
+    sizeId: number;
   }
