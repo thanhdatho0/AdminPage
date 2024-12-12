@@ -22,7 +22,7 @@ interface PersonalInfo {
 }
 const StatsCardList: React.FC = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const { user } = useContext(UserContext);
+  const { user, logoutContext } = useContext(UserContext);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -36,6 +36,7 @@ const StatsCardList: React.FC = () => {
         setCustomers(response.data);
       } catch (error) {
         console.error("Error fetching customers:", error);
+        logoutContext();
       }
     };
     fetchData();

@@ -26,7 +26,7 @@ const UserList = () => {
     null
   );
   const [editedCustomer, setEditedCustomer] = useState<Customer | null>(null);
-  const { user } = useContext(UserContext);
+  const { user, logoutContext } = useContext(UserContext);
 
   useEffect(() => {
     const fetchCustomers = async () => {
@@ -45,6 +45,7 @@ const UserList = () => {
         setFilteredCustomers(sortedData); // Initialize filtered list
       } catch (error) {
         console.error("Error fetching customers:", error);
+        logoutContext();
       }
     };
 
@@ -87,6 +88,7 @@ const UserList = () => {
       setEditedCustomer(data);
     } catch (error) {
       console.error("Error fetching customer details:", error);
+      logoutContext();
     }
   };
 
@@ -169,6 +171,7 @@ const UserList = () => {
         }
       } catch (error) {
         console.error("Error saving customer:", error);
+        logoutContext();
       }
     }
   };
