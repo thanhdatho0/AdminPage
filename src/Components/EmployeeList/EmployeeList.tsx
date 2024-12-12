@@ -7,6 +7,7 @@ import {
   FaCalendarAlt,
   FaMoneyBillAlt,
 } from "react-icons/fa";
+import { BASE_URL } from "../../api";
 
 // Define the shape of the employee data (from the API)
 interface Employee {
@@ -31,7 +32,7 @@ const EmployeeList: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get("http://localhost:5254/api/Employee");
+        const response = await axios.get(`${BASE_URL}/Employee`);
         setEmployees(response.data);
       } catch (error) {
         console.error("Error fetching employees:", error);

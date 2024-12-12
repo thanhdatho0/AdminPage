@@ -187,3 +187,21 @@ type ProductInventory = {
     colorId: number;
     sizeId: number;
   }
+
+export  interface EmailRequest {
+    email: string;
+    username: string;
+  }
+
+ export interface User {
+    isAuthenticated: boolean;
+    accessToken: string;
+    username: string;
+  }
+
+  
+export  interface UserContextType {
+    user: User;
+    loginContext: (userData: User) => void;
+    logoutContext: () => void;
+  }

@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Header from "../../Components/PageHeader/Header.tsx";
 import ReportComponent from "../../Components/ReportComponent/ReportComponent.tsx";
+import { BASE_URL } from "../../api.tsx";
 
 const ReportsPage = () => {
   const [orders, setOrders] = useState<any[]>([]); // Initialize state for orders
@@ -9,7 +10,7 @@ const ReportsPage = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await fetch("http://localhost:5254/api/Order");
+        const response = await fetch(`${BASE_URL}/Order`);
         const data = await response.json();
 
         // Handle any potential errors (e.g. empty or malformed data)

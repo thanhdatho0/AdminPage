@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { BASE_URL } from "../../api";
 
 // Define the shape of the order data (from the API)
 interface OrderDetail {
@@ -28,7 +29,7 @@ const TransactionList: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get("http://localhost:5254/api/Order");
+        const response = await axios.get(`${BASE_URL}/Order`);
         setOrders(response.data);
       } catch (error) {
         console.error("Error fetching orders:", error);

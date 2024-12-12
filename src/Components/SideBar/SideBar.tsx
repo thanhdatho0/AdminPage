@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import {
   AiOutlineDashboard,
   AiOutlineUser,
@@ -12,10 +12,12 @@ import { BiDollarCircle, BiBarChartSquare, BiGroup } from "react-icons/bi";
 import { Link } from "react-router-dom";
 import "./Sidebar.css";
 import logo from "./Logo.jpg";
+import { UserContext } from "../UserContext/UserContext";
 
 const SideBar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeItem, setIsActivated] = useState<string | undefined>();
+  const { logoutContext } = useContext(UserContext);
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
@@ -207,11 +209,11 @@ const SideBar = () => {
           {/* Logout */}
           <div>
             <ul className="mt-4">
-              <Link to={"/login"}>
+              <button onClick={logoutContext}>
                 <li className="flex items-center p-2 rounded-md hover:bg-gray-700 cursor-pointer">
                   <FiLogOut className="mr-2" /> Logout
                 </li>
-              </Link>
+              </button>
             </ul>
           </div>
         </div>

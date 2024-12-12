@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FiEdit, FiTrash } from "react-icons/fi";
 import { GetProduct } from "../../ShopModels";
+import { BASE_URL } from "../../api";
 
 interface ProductCardProp {
   product: GetProduct;
@@ -43,7 +44,7 @@ const ProductCard: React.FC<ProductCardProp> = ({
   const handleSave = async () => {
     try {
       const response = await fetch(
-        `http://localhost:5254/api/products/${product.productId}`,
+        `${BASE_URL}/products/${product.productId}`,
         {
           method: "PUT",
           headers: {

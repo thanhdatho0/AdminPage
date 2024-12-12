@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Header from "../../Components/PageHeader/Header";
+import { BASE_URL } from "../../api";
 
 type OrderDetail = {
   productName: string;
@@ -30,7 +31,7 @@ const OrderPage = (props: any) => {
     // Fetch orders from the API
     const fetchOrders = async () => {
       try {
-        const response = await fetch("http://localhost:5254/api/Order");
+        const response = await fetch(`${BASE_URL}/api/Order`);
         const data = await response.json();
         setOrders(data);
       } catch (error) {
@@ -44,16 +45,13 @@ const OrderPage = (props: any) => {
   const handleConfirmClick = async (orderId: number) => {
     try {
       // Send a PUT request to update the order's confirmed status
-      const response = await fetch(
-        `http://localhost:5254/api/Order/${orderId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ confirmed: true }),
-        }
-      );
+      const response = await fetch(`${BASE_URL}/Order/${orderId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ confirmed: true }),
+      });
 
       if (response.ok) {
         // If the update is successful, update the order state

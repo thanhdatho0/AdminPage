@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 // import { FaTimes } from "react-icons/fa";
 import {
+  BASE_URL,
   getAllCategories,
   getAllColors,
   getAllProducts,
@@ -428,18 +429,14 @@ const ProductForm: React.FC<Props> = ({ product, checkProduct }) => {
 
       try {
         if (checkProduct) {
-          await axios.post(
-            "http://localhost:5254/api/products",
-            JSON.stringify(productt),
-            {
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
+          await axios.post(`${BASE_URL}/products`, JSON.stringify(productt), {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
         } else {
           await axios.put(
-            `http://localhost:5254/api/products/${product?.productId}`,
+            `${BASE_URL}/products/${product?.productId}`,
             JSON.stringify(productt),
             {
               headers: {
