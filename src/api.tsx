@@ -59,15 +59,22 @@ export const getAllColors = async () => {
   }
 };
 
-export const getAllProvider = async () => {
+export const getAllProvider = async (): Promise<Provider[] | []> => {
   try {
-    return await axios.get<Provider[]>(`${BASE_URL}/providers`);
-  } catch {
-    if (axios.isAxiosError(error)) {
-      console.log(error.message);
-    } else {
-      console.log(error);
+    console.log("Fetching providers...");
+    const response = await fetch("http://localhost:5254/api/providers");
+    if (!response.ok) {
+      console.error(
+        `Failed to fetch providers: ${response.status} (${response.statusText})`
+      );
+      return [];
     }
+    const data: Provider[] = await response.json();
+    console.log("Fetched providers:", data);
+    return data;
+  } catch (error) {
+    console.error("Error during fetch:", error);
+    return [];
   }
 };
 
@@ -153,7 +160,7 @@ export const changePassword = async (
     }
 
     return response;
-  } catch (error) {
+  } catch (error:any) {
     // @ts-ignore
     throw new Error(error.message || "Không thể kết nối đến máy chủ.");
   }
