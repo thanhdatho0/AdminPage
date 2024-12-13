@@ -89,10 +89,12 @@ const ProductForm: React.FC<Props> = ({ product, checkProduct }) => {
       );
       setSizes(fetchSizesResult);
 
-      const fetchProvidersResult = await getAllProvider().then(
-        (data) => data?.data || []
-      );
-      setProviders(fetchProvidersResult);
+      const fetchProviders = async () => {
+        const providers = await getAllProvider();
+        console.log("Providers fetched:", providers);
+        setProviders(providers);
+      };
+      await fetchProviders();
 
       const fetchCategoriesResult = await getAllCategories().then(
         (data) => data?.data || []
@@ -167,24 +169,24 @@ const ProductForm: React.FC<Props> = ({ product, checkProduct }) => {
   const handleSelectImg = (files: FileList | null) => {
     if (files && files.length > 0) {
       const file = files[0];
-      const fileURL = URL.createObjectURL(file);
+      const fileURL = URL.createObjectURL(file); // Generate the blob URL for the image
 
       setProductDetails((prev) => {
         const currentImages = prev[currentColor]?.selectedImg || [];
         const nextImages = [...currentImages];
 
-        const emptyIndex = nextImages.findIndex((img) => !img);
+        const emptyIndex = nextImages.findIndex((img) => !img); // Find an empty slot
         if (emptyIndex !== -1) {
-          nextImages[emptyIndex] = fileURL;
+          nextImages[emptyIndex] = fileURL; // Place the new URL in the empty slot
         } else {
-          nextImages.push(fileURL);
+          nextImages.push(fileURL); // If no empty slot, push the new URL
         }
 
         return {
           ...prev,
           [currentColor]: {
             ...prev[currentColor],
-            selectedImg: nextImages,
+            selectedImg: nextImages, // Update the state with the new image URL
           },
         };
       });
