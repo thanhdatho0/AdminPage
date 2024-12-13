@@ -22,7 +22,7 @@ const UserList = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
+  const [, setSelectedCustomer] = useState<Customer | null>(
     null
   );
   const [editedCustomer, setEditedCustomer] = useState<Customer | null>(null);
@@ -93,8 +93,8 @@ const UserList = () => {
   };
 
   const handleInputChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
-    field: keyof PersonalInfo
+      event: React.ChangeEvent<HTMLInputElement>,
+      field: string
   ) => {
     if (editedCustomer) {
       setEditedCustomer({

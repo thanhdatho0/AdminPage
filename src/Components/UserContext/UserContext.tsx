@@ -44,7 +44,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       const response = await refreshToken(token);
       if (response && response.data) {
         const newAccessToken = response.data.accessToken;
-        setUser((prevUser) => {
+        setUser((prevUser: any) => {
           const updatedUser = {
             ...prevUser,
             accessToken: newAccessToken, // Cập nhật accessToken mới

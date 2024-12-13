@@ -160,8 +160,9 @@ export const changePassword = async (
     }
 
     return response;
-  } catch (error) {
-    throw new Error("Không thể kết nối đến máy chủ.");
+  } catch (error:any) {
+    // @ts-ignore
+    throw new Error(error.message || "Không thể kết nối đến máy chủ.");
   }
 };
 
