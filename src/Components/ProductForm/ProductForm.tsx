@@ -90,7 +90,7 @@ const ProductForm: React.FC<Props> = ({ product, checkProduct }) => {
       setSizes(fetchSizesResult);
 
       const fetchProviders = async () => {
-        const providers = await getAllProvider();
+        const providers = await getAllProvider(user.accessToken);
         console.log("Providers fetched:", providers);
         setProviders(providers);
       };
@@ -328,10 +328,10 @@ const ProductForm: React.FC<Props> = ({ product, checkProduct }) => {
       return;
     }
 
-    if (colorsChosen.length === 0) {
-      alert("Vui lòng chọn ít nhất một màu sắc");
-      return;
-    }
+    // if (colorsChosen.length === 0) {
+    //   alert("Vui lòng chọn ít nhất một màu sắc");
+    //   return;
+    // }
 
     if (!cost || cost <= 0) {
       alert("Giá gốc phải lớn hơn 0");

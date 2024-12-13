@@ -59,10 +59,17 @@ export const getAllColors = async () => {
   }
 };
 
-export const getAllProvider = async (): Promise<Provider[] | []> => {
+export const getAllProvider = async (token : string): Promise<Provider[] | []> => {
   try {
     console.log("Fetching providers...");
-    const response = await fetch("http://localhost:5254/api/providers");
+    const response = await fetch("http://localhost:5254/api/providers",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // Thêm header Authorization
+        },
+      }
+
+    );
     if (!response.ok) {
       console.error(
         `Failed to fetch providers: ${response.status} (${response.statusText})`
