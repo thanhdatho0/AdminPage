@@ -201,8 +201,8 @@ const ProductForm: React.FC<Props> = ({ product, checkProduct }) => {
       details?.adminInputQuantity?.some((qty) => qty > 0) || false;
     const hasImages = details?.selectedImg?.some((img) => img) || false;
 
-    if (!hasSizes || !hasQuantities || !hasImages) {
-      alert("Vui lòng nhập đầy đủ size, số lượng và chọn ít nhất một ảnh!");
+    if (!hasSizes || !hasQuantities) {
+      alert("Vui lòng nhập đầy đủ size, số lượng");
       return;
     }
 
@@ -753,34 +753,6 @@ const ProductForm: React.FC<Props> = ({ product, checkProduct }) => {
                   </div>
 
                   {/* Image Upload */}
-                  <div className="grid grid-cols-5 gap-4 mt-4">
-                    {[...Array(5)].map((_, index) => (
-                      <div
-                        className="relative w-20 h-20 border border-gray-300 rounded-lg overflow-hidden bg-gray-50 hover:bg-gray-100 cursor-pointer"
-                        key={index}
-                      >
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                          onChange={(e) => handleSelectImg(e.target.files)}
-                        />
-                        {productDetails[currentColor]?.selectedImg[index] ? (
-                          <img
-                            src={
-                              productDetails[currentColor]?.selectedImg[index]
-                            }
-                            alt={`Selected Image ${index}`}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <span className="text-gray-400 text-2xl flex items-center justify-center font-semibold">
-                            +
-                          </span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
 
                   {/* Save Button */}
                   <div className="mt-4">
