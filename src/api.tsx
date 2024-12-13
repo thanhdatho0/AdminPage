@@ -11,7 +11,7 @@ import {
 import { Simulate } from "react-dom/test-utils";
 import error = Simulate.error;
 
-export const BASE_URL = "https://team7api-v1-0-0.onrender.com/api";
+export const BASE_URL = "http://localhost:5254/api";
 
 export const getAllProducts = async (
   TargetCustomerId?: string | null,
@@ -160,7 +160,7 @@ export const changePassword = async (
     }
 
     return response;
-  } catch (error:any) {
+  } catch (error: any) {
     // @ts-ignore
     throw new Error(error.message || "Không thể kết nối đến máy chủ.");
   }

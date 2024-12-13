@@ -193,7 +193,7 @@ const ProductForm: React.FC<Props> = ({ product, checkProduct }) => {
     }
   };
 
-  const handleClickSave = () => {
+  const handleClickSave = async () => {
     const details = productDetails[currentColor];
 
     const hasSizes = details?.adminSelectedSize?.length > 0;
@@ -205,6 +205,72 @@ const ProductForm: React.FC<Props> = ({ product, checkProduct }) => {
       alert("Vui lòng nhập đầy đủ size, số lượng và chọn ít nhất một ảnh!");
       return;
     }
+
+    // Retrieve the image details from productDetails
+    const selectedImages = details.selectedImg;
+
+    for (let i = 0; i < selectedImages.length; i++) {
+      const imageURL = selectedImages[i];
+      if (!imageURL) continue; // Skip empty slots
+
+      try {
+        // Convert the image URL to a file (Blob) for upload
+        const response = await fetch(imageURL); // Get the blob from the image URL
+        const blob = await response.blob();
+        const file = new File([blob], `image-${currentColor}-${i}.jpg`, {
+          type: blob.type,
+        });
+
+        // Prepare the FormData object to send to the server
+        const formData = new FormData();
+        formData.append("file", file); // Add the file
+        formData.append("productId", String(4)); // Replace with dynamic productId
+        formData.append("colorId", String(currentColor)); // Replace with dynamic colorId
+
+        // Send the request to upload the image
+        const uploadResponse = await fetch("http://localhost:5254/api/images", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${user.accessToken}`,
+          },
+          body: formData,
+        });
+
+        if (!uploadResponse.ok) {
+          const errorMessage = await uploadResponse.text();
+          console.error("Error uploading image:", errorMessage);
+          alert("Lỗi khi tải ảnh lên: " + errorMessage);
+          return;
+        }
+
+        const uploadedImage = await uploadResponse.json();
+        console.log("Uploaded image:", uploadedImage);
+
+        // Update the state with the uploaded image URL
+        setProductDetails((prev) => {
+          const currentImages = prev[currentColor]?.selectedImg || [];
+          const nextImages = [...currentImages];
+          nextImages[i] = uploadedImage.url; // Update the image URL with the uploaded URL
+
+          return {
+            ...prev,
+            [currentColor]: {
+              ...prev[currentColor],
+              selectedImg: nextImages, // Update the state with the new image URLs
+            },
+          };
+        });
+
+        console.log(
+          `Image ${i + 1} uploaded successfully with URL ${uploadedImage.url}`
+        );
+      } catch (error: any) {
+        console.error("Error uploading image:", error);
+        alert(`Lỗi khi tải ảnh lên: ${error.message}`);
+      }
+    }
+
+    // Close the form after all images are uploaded
     closeForm();
   };
 
